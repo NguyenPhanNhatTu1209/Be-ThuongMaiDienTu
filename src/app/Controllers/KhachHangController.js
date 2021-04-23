@@ -26,7 +26,7 @@ class KhachHangController {
         });
       }
     }
-    catch
+    catch (error)
     {
       res.status(400).send({
         'error': 'Dang ky that bai',

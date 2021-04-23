@@ -5,7 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon --inspect src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rimraf dist/ && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-console.log.log --copy-files",
+    "start:prod": "npm run build && node dist/src/index.js",
+    "dev": "nodemon --exec babel-node src/index.js",
+    "pm2": "yarn build && yarn pm2:start",
+    "pm2:start": "pm2 start ecosystem.config.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +24,7 @@
   },
   "homepage": "https://github.com/lvminh/UTE2.21-EC18B010-BE#readme",
   "dependencies": {
+    "babel-cli": "^6.26.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "mongoose": "^5.12.5",
