@@ -4,8 +4,8 @@ const router = express.Router();
 const khachhangController = require('../app/Controllers/KhachHangController.js');
 
 //router.get('/create', khachhangController.create);
-router.post('/register',khachhangController.register);
-router.post('/login',khachhangController.login);
+// router.post('/register',khachhangController.register);
+// router.post('/login',khachhangController.login);
 
 // router.post('/handle-form-actions',courseController.handleFormActions);   
 // router.get('/:id/edit',courseController.edit);

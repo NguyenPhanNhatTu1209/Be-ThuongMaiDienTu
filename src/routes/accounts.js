@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 
-const doanhnghiepController = require('../app/Controllers/DoanhNghiepController.js');
+const taikhoanController = require('../app/Controllers/TaiKhoanController');
 
 //router.get('/create', khachhangController.create);
-// router.post('/register',doanhnghiepController.register);
-// router.post('/login',doanhnghiepController.login);
+router.post('/register-khachhang',taikhoanController.registerKhachHang);
+router.post('/register-doanhnghiep',taikhoanController.registerDoanhNghiep);
+router.post('/login',taikhoanController.login);
 
 // router.post('/handle-form-actions',courseController.handleFormActions);   
 // router.get('/:id/edit',courseController.edit);

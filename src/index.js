@@ -7,10 +7,10 @@ const port = process.env.PORT || 8000;
 const route = require('./routes');
 
 
-db.connect();
+db.connect(process.env.DB_URL);
 app.use(express.json());
 route(app);
 app.listen(port, () => {
-    console.log(`App listening at http://localhost`,port);
+      console.log(`App listening at http://localhost`,port);
   });
   
