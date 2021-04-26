@@ -10,7 +10,7 @@ const DoanhNghiep = new Schema({
   Email: {type:String,required: true,},
   DiaChi: { type: String,required: true,},
   GiayPhep: { type: String,required: true,},
-  Password: { type: String,required: true,},
+  TrangThai: { type: String,required: true,},
 },{
   timestamps: true,
 });

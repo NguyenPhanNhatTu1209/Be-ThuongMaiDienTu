@@ -3,13 +3,10 @@ const Schema = mongoose.Schema;
 const mongooseDelete = require('mongoose-delete');
 
 
-const KhachHang = new Schema({
-  TenKhachHang: {type:String, required: true,},
-  GioiTinh: {type:String,required: true,},
-  NamSinh: {type:String, required: true,},
+const TaiKhoan = new Schema({
   Email: {type:String,required: true,},
-  SoDienThoai: { type: String,required: true,},
-  DiaChi: { type: String,required: true,},  
+  Password: { type: String,required: true,},
+  Role: { type: String,required: true,},
 },{
   timestamps: true,
 });
@@ -21,4 +18,4 @@ const KhachHang = new Schema({
 //    deletedAt : true,
 //  });
 
-module.exports=mongoose.model('customer', KhachHang);
+module.exports=mongoose.model('account', TaiKhoan);
