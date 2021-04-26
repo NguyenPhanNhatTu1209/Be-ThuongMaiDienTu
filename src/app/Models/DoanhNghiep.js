@@ -1,16 +1,16 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const mongooseDelete = require('mongoose-delete');
 
 
 const DoanhNghiep = new Schema({
   TenDoanhNghiep: {type:String, required: true,},
-  Logo: {type:String,required: true,},
+  Logo: {type:String,default: "",},
   SoDienThoai: {type:String, required: true,},
   Email: {type:String,required: true,},
   DiaChi: { type: String,required: true,},
   GiayPhep: { type: String,required: true,},
   TrangThai: { type: String,required: true,},
+  id_account: { type: String,required: true,},
 },{
   timestamps: true,
 });
@@ -23,4 +23,4 @@ const DoanhNghiep = new Schema({
 //    deletedAt : true,
 //  });
 
-module.exports=mongoose.model('enterprises', DoanhNghiep);
+module.exports=mongoose.model('enterprise', DoanhNghiep);
