@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-const khachhangController = require('../app/Controllers/KhachHangController.js');
+const meController = require('../app/Controllers/MeController');
 
 //router.get('/create', khachhangController.create);
-// router.post('/register',khachhangController.register);
- //router.get('/information',khachhangController.information);
+router.get('/information',meController.information);
+router.put('/edit-profile', meController.editProfile);
+// router.post('/register-doanhnghiep',meController.registerDoanhNghiep);
+// router.post('/login',meController.login);
 
 // router.post('/handle-form-actions',courseController.handleFormActions);   
 // router.get('/:id/edit',courseController.edit);

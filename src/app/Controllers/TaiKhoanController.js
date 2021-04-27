@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const { createToken } = require('./index');
 
 class TaiKhoanController {
-    //GET KhachHang/login
+    //Post auth/login
     async login(req, res, next) {
         const { Email, Password } = req.body;
         var result = await TaiKhoan.findOne({ Email })
@@ -30,7 +30,7 @@ class TaiKhoanController {
             });
         }
     }
-    //Post customers/register
+    //Post customers/register-khachhang
     async registerKhachHang(req, res, next) {
 
         const { Email, Password, TenKhachHang, SoDienThoai, DiaChi } = req.body;
@@ -56,7 +56,7 @@ class TaiKhoanController {
             });
         }
     }
-
+    //Post enterprises/register-doanhnghiep
     async registerDoanhNghiep(req, res, next) {
 
         const { Email, Password, TenDoanhNghiep, SoDienThoai, DiaChi, GiayPhep } = req.body;
