@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 
+
 const DoanhNghiep = new Schema({
   TenDoanhNghiep: {type:String, required: true,},
   Logo: {type:String,default: "",},
