@@ -1,5 +1,5 @@
-const TaiKhoan = require('../models/TaiKhoan');
-const KhachHang = require('../models/KhachHang');
+const TaiKhoan = require('../Models/TaiKhoan');
+const KhachHang = require('../Models/KhachHang');
 const DoanhNghiep = require('../Models/DoanhNghiep');
 const bcrypt = require('bcrypt');
 const { createToken } = require('./index');
