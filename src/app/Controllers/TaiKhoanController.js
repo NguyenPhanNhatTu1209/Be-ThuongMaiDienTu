@@ -42,6 +42,7 @@ class TaiKhoanController {
                 const account = await TaiKhoan.create({ Email, Password: hashPassword, Role });
                 const id_account = account._id;
                 const customer = await KhachHang.create({ TenKhachHang, Email, SoDienThoai, DiaChi, id_account });
+                console.log(customer);
                 res.status(200).send(customer);
             } else {
                 res.status(400).send({
