@@ -4,6 +4,7 @@ const DoanhNghiep = require('../Models/DoanhNghiep');
 const { createToken, verifyToken } = require('./index');
 class KhachHangController {
 
+    
 }
 
 module.exports = new KhachHangController();
