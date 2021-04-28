@@ -6,7 +6,7 @@ const Schema = mongoose.Schema;
 const GoiKhachHang = new Schema({
   TenDichVuKhachHang: {type:String, required: true,},
   ThongTin: {type:String,required: true,},
-  KhoiLuongToiDa: {type:Date, required: true,},
+  KhoiLuongToiDa: {type:String, required: true,},
   ChiPhi: { type: String,required: true,},
   HanSuDung: { type: Number,required: true,},
   SoDonHang: { type: Number,required: true,},

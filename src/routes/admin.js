@@ -5,6 +5,10 @@ const adminController = require('../app/Controllers/AdminController');
 
 //router.get('/create', khachhangController.create);
 router.post('/create-goikhachhang',adminController.creategoiKH);
+router.post('/create-goidoanhnghiep',adminController.creategoiDN);
+router.put('/update-goidoanhnghiep',adminController.updategoiDN);
+router.put('/update-goikhachhang',adminController.updategoiKH);
+
 
 // router.post('/handle-form-actions',courseController.handleFormActions);   
 // router.get('/:id/edit',courseController.edit);

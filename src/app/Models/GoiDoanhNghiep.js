@@ -4,12 +4,10 @@ const Schema = mongoose.Schema;
 
 
 const GoiDoanhNghiep = new Schema({
-  ThongTin: {type:String, required: true,},
-  NgayBatDau: {type:Date,required: true,},
-  NgayKetThuc: {type:Date, required: true,},
-  ChiPhi: {type:String,required: true,},
   TenGoi: { type: String,required: true,},
-  HanSuDung: { type: String,required: true,},
+  ThongTin: {type:String, required: true,},
+  ChiPhi: {type:String,required: true,},
+  HanSuDung: { type: Number,required: true,},
   SoDonHang: { type: Number,required: true,},
 },{
   timestamps: true,

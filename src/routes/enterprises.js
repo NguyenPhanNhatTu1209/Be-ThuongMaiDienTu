@@ -6,7 +6,6 @@ const doanhnghiepController = require('../app/Controllers/DoanhNghiepController.
 //router.get('/create', khachhangController.create);
 // router.post('/register',doanhnghiepController.register);
 // router.post('/login',doanhnghiepController.login);
-
 // router.post('/handle-form-actions',courseController.handleFormActions);   
 // router.get('/:id/edit',courseController.edit);
 // router.put('/:id',courseController.update);
