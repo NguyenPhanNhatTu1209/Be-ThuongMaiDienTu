@@ -8,6 +8,8 @@ router.post('/create-goikhachhang',adminController.creategoiKH);
 router.post('/create-goidoanhnghiep',adminController.creategoiDN);
 router.put('/update-goidoanhnghiep',adminController.updategoiDN);
 router.put('/update-goikhachhang',adminController.updategoiKH);
+router.delete('/deleted-goikhachhang',adminController.deleteGoiKH);
+router.delete('/deleted-goidoanhnghiep',adminController.deleteGoiDN);
 
 
 // router.post('/handle-form-actions',courseController.handleFormActions);   
