@@ -1,10 +1,7 @@
 const TaiKhoan = require('../Models/TaiKhoan');
-const KhachHang = require('../Models/KhachHang');
-const DoanhNghiep = require('../Models/DoanhNghiep');
 const GoiKhachHang = require('../Models/GoiKhachHang');
 const GoiDoanhNghiep = require('../Models/GoiDoanhNghiep');
-const bcrypt = require('bcrypt');
-const { createToken, verifyToken } = require('./index');
+const { verifyToken } = require('./index');
 
 class AdminController {
     //Post admin/create-goikhachhang  

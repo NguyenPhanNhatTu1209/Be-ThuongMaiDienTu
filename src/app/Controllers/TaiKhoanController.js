@@ -13,9 +13,9 @@ class TaiKhoanController {
             const isEqualPassword = await bcrypt.compare(Password, result.Password);
             if (isEqualPassword) {
                 const token = await createToken(`${result._id}`);
+                result._doc.token = token;
                 res.status(200).send({
                     "data": result,
-                    "token": token,
                     "error": "null",
                 });
             }
