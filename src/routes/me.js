@@ -2,10 +2,14 @@ const express = require('express');
 const router = express.Router();
 
 const meController = require('../app/Controllers/MeController');
+const diachiController = require('../app/Controllers/DiaChiController');
 
 //router.get('/create', khachhangController.create);
 router.get('/information',meController.information);
 router.put('/edit-profile', meController.editProfile);
+router.post('/add-address', diachiController.ThemDiaChi);
+router.put('/edit-address', diachiController.SuaDiaChi);
+router.delete('/delete-address', diachiController.XoaDiaChi);
 // router.post('/register-doanhnghiep',meController.registerDoanhNghiep);
 // router.post('/login',meController.login);
 

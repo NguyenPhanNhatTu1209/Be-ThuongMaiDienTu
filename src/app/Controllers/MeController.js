@@ -1,6 +1,8 @@
 const TaiKhoan = require('../Models/TaiKhoan');
 const KhachHang = require('../Models/KhachHang');
 const DoanhNghiep = require('../Models/DoanhNghiep');
+const DiaChi = require('../Models/DiaChi');
+
 const { createToken, verifyToken } = require('./index');
 class MeController {
     //get me/information / get || post put delete
@@ -12,6 +14,8 @@ class MeController {
             const roleDT = result.Role;
             if (roleDT == "KHACHHANG") {
                 var resultKH = await KhachHang.findOne({ id_account: _id });
+                const resultAddress = await DiaChi.find({ id_account: _id }); // find All address by id account
+                resultKH._doc.address = resultAddress; // them vao bien resultKH 1 key la address va` gia' tri la bien resultAddress vua tim dc o dong tren
                 res.status(200).send({
                     "data": resultKH,
                     "error": "null",
@@ -34,7 +38,7 @@ class MeController {
 
     async editProfile(req, res, next) {
         const { Ten, SoDienThoai, DiaChi } = req.body;
-        var updateValue = {SoDienThoai, DiaChi};
+        var updateValue = { SoDienThoai, DiaChi };
         const token = req.get('Authorization').replace('Bearer ', '');
         const _id = await verifyToken(token);
         var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
@@ -42,7 +46,7 @@ class MeController {
             const roleDT = result.Role;
             if (roleDT == "KHACHHANG") {
                 updateValue.TenKhachHang = Ten;
-                var resultKH = await KhachHang.findOneAndUpdate({ id_account: _id }, 
+                var resultKH = await KhachHang.findOneAndUpdate({ id_account: _id },
                     updateValue, {
                     new: true
                 });
@@ -53,7 +57,7 @@ class MeController {
             }
             else {
                 updateValue.TenDoanhNghiep = Ten;
-                var resultDN = await DoanhNghiep.findOneAndUpdate({ id_account: _id }, 
+                var resultDN = await DoanhNghiep.findOneAndUpdate({ id_account: _id },
                     updateValue, {
                     new: true
                 });

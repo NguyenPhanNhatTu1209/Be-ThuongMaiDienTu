@@ -8,7 +8,6 @@ router.put('/update-shipping-package', doanhnghiepController.UpdateShippingPacka
 router.delete('/delete-shipping-package', doanhnghiepController.DeleteShippingPackage);
 router.get('/show-shipping-package', doanhnghiepController.UpdateShippingPackage);
 
-
 //router.get('/create', khachhangController.create);
 // router.post('/register',doanhnghiepController.register);
 // router.post('/login',doanhnghiepController.login);
