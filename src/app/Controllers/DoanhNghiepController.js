@@ -34,12 +34,13 @@ class DoanhNghiepController {
 
   async UpdateShippingPackage(req, res, next) {
     try {
-      const updateData = req.body;
       const token = req.get('Authorization').replace('Bearer ', '');
       const _id = await verifyToken(token);
       const userDb = await TaiKhoan.findOne({_id});
+      console.log(userDb._id);
       if (userDb.Role == "DOANHNGHIEP") {
-        const shippingPackage = await GoiVanChuyen.findOneAndUpdate({_id: updateData._id}, updateData, {new: true});
+        const shippingPackage = await GoiVanChuyen.find({IdCongTy: userDb._id,Status: "ACTIVE"});
+        console.log(shippingPackage);
         res.status(200).send({
           "data": shippingPackage,
           "error": "",
@@ -83,6 +84,34 @@ class DoanhNghiepController {
       });
     }
   }
+  //Get enterprises/show-shipping-package
+  async ShowShippingPackage(req, res, next) {
+    try {
+      const updateData = req.body;
+      const token = req.get('Authorization').replace('Bearer ', '');
+      const _id = await verifyToken(token);
+      const userDb = await TaiKhoan.findOne({_id});
+      if (userDb.Role == "DOANHNGHIEP") {
+        const shippingPackage = await GoiVanChuyen.findOneAndUpdate({_id: updateData._id}, updateData, {new: true});
+        res.status(200).send({
+          "data": shippingPackage,
+          "error": "",
+        });
+      } else {
+        res.status(400).send({
+          "data": "",
+          "error": "User is not DoanhNghiep Role",
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        "data": error,
+        "error": "Internal Server Error",
+      });
+    }
+  }
+
+
 }
 
 module.exports = new DoanhNghiepController();

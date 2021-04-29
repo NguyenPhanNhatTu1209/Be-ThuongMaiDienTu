@@ -6,6 +6,8 @@ const doanhnghiepController = require('../app/Controllers/DoanhNghiepController.
 router.post('/create-shipping-package', doanhnghiepController.CreateShippingPackage);
 router.put('/update-shipping-package', doanhnghiepController.UpdateShippingPackage);
 router.delete('/delete-shipping-package', doanhnghiepController.DeleteShippingPackage);
+router.get('/show-shipping-package', doanhnghiepController.UpdateShippingPackage);
+
 
 //router.get('/create', khachhangController.create);
 // router.post('/register',doanhnghiepController.register);
