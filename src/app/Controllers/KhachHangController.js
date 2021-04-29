@@ -24,40 +24,7 @@ class KhachHangController {
             });
         }
     }
-    async ChonGoiDichVu(req, res, next) {
-        // const { TenDichVuKhachHang, KhoiLuongToiDa, HanSuDung,SoDonHang,GiamGia } = req.body;
-        var idGoiDichVuKhachHang =  req.body.idGoiDV;
-        const token = req.get('Authorization').replace('Bearer ', '');
-        const _id = await verifyToken(token);
-        var resultKH = await TaiKhoan.findOne({ _id }); //muc dich la lay role
-        var resultGoiDV = await GoiKhachHang.findOne({DeleteAt: "False" , _id: idGoiDichVuKhachHang});
-        const { TenDichVuKhachHang, KhoiLuongToiDa, HanSuDung,SoDonHang,GiamGia } = resultGoiDV;
-        const update = { TenDichVuKhachHang, KhoiLuongToiDa, HanSuDung,SoDonHang,GiamGia };
-        if (resultKH != null) {
-            const roleDT = resultKH.Role;
-            if (roleDT == "KHACHHANG") {
-                var resultKH = await KhachHang.findOneAndUpdate({ id_account: _id },
-                    update, {
-                    new: true
-                });
-                res.status(200).send({
-                    "data": resultKH,
-                    "error": "null",
-                });
-            }
-            else {
-                res.status(404).send({
-                    "data": '',
-                    "error": "No Package",
-                });
-            }
-        } else {
-            res.status(404).send({
-                "data": '',
-                "error": "Not found user!",
-            });
-        }
-    }
+
 
     // async CreateOrder(req, res, next) {
     //     const {TenNguoiNhan,SoDienThoaiNguoiNhan,NoiLayHang,NoiGiaoHang,TrangThai,KhoiLuong,TenLoaiHang,GiaGia,TongChiPhi,id_goiDV,id_KhachHang} = req.body;
