@@ -8,9 +8,12 @@ const KhachHang = new Schema({
   TenKhachHang: {type:String, required: true,},
   Email: {type:String,required: true,},
   SoDienThoai: { type: String,required: true,},
-  DiaChi: { type: String,required: true,},
+  TenDichVuKhachHang: {type:String, default: null,},
+  KhoiLuongToiDa: {type:String, default: null,},
+  HanSuDung: { type: Number,default: null,},
+  SoDonHang: { type: Number,default: null,},
+  GiamGia: { type: Number,default: null,},
   id_account: { type: String,required: true,},
-  id_dichvukh: {type: String, default: null},
 },{
   timestamps: true,
 });

@@ -4,6 +4,7 @@ const router = express.Router();
 const khachhangController = require('../app/Controllers/KhachHangController.js');
 
 router.get('/show_goikhachhang', khachhangController.showGoiKH);
+router.put('/choose_goidichvukhachhang',khachhangController.ChonGoiDichVu);
 // router.post('/register',khachhangController.register);
  //router.get('/information',khachhangController.information);
 
