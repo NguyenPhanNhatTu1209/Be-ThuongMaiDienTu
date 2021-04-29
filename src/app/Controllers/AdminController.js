@@ -159,7 +159,102 @@ class AdminController {
             });
         }
     }
-
+    // Delete admin/deleted-goikhachhang
+    async deleteGoiKH(req, res, next) {
+        try {
+            const token = req.get('Authorization').replace('Bearer ', '');
+            const { DeleteAt,  idGoiKhachHang } = req.body;
+            var updateValue = { DeleteAt: "True"};
+            const _id = await verifyToken(token);
+            var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+            if (result != null) {
+                const roleDT = result.Role;
+                if (roleDT == "ADMIN") {
+                    var check = await GoiKhachHang.findOne({ _id: idGoiKhachHang });
+                    if (check != null) {
+                        var resultKH = await GoiKhachHang.findOneAndUpdate({ _id: idGoiKhachHang },
+                            updateValue, {
+                            new: true
+                        });
+                        res.status(200).send({
+                            "data": resultKH,
+                            "error": "null",
+                        });
+                    }
+                    else {
+                        res.status(400).send({
+                            "data": "",
+                            "error": "No Package",
+                        });
+                    }
+                }
+                else {
+                    res.status(400).send({
+                        "data": "",
+                        "error": "No Authentication",
+                    });
+                }
+            } else {
+                res.status(404).send({
+                    "data": '',
+                    "error": "Not found user!",
+                });
+            }
+        } catch (error) {
+            res.status(500).send({
+                "data": '',
+                "error": error,
+            });
+        }
+    }
+// Delete admin/deleted-goidoanhnghiep
+async deleteGoiDN(req, res, next) {
+    try {
+        const token = req.get('Authorization').replace('Bearer ', '');
+        const { DeleteAt,  idGoiDoanhNghiep } = req.body;
+        var updateValue = { DeleteAt: "True"};
+        const _id = await verifyToken(token);
+        var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+        if (result != null) {
+            const roleDT = result.Role;
+            if (roleDT == "ADMIN") {
+                var check = await GoiDoanhNghiep.findOne({ _id: idGoiDoanhNghiep });
+                if (check != null) {
+                    var resultKH = await GoiDoanhNghiep.findOneAndUpdate({ _id: idGoiDoanhNghiep },
+                        updateValue, {
+                        new: true
+                    });
+                    res.status(200).send({
+                        "data": resultKH,
+                        "error": "null",
+                    });
+                }
+                else {
+                    res.status(400).send({
+                        "data": "",
+                        "error": "No Package",
+                    });
+                }
+            }
+            else {
+                res.status(400).send({
+                    "data": "",
+                    "error": "No Authentication",
+                });
+            }
+        } else {
+            res.status(404).send({
+                "data": '',
+                "error": "Not found user!",
+            });
+        }
+    } catch (error) {
+        res.status(500).send({
+            "data": '',
+            "error": error,
+        });
+    }
+}
 
 
 }

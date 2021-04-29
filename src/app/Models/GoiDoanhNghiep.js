@@ -9,6 +9,7 @@ const GoiDoanhNghiep = new Schema({
   ChiPhi: {type:String,required: true,},
   HanSuDung: { type: Number,required: true,},
   SoDonHang: { type: Number,required: true,},
+  DeleteAt: {type: String, default:"False" },
 },{
   timestamps: true,
 });
