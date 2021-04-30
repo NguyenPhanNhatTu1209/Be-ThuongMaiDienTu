@@ -8,9 +8,8 @@ const Order = new Schema({
   TrangThai: { type: String,required: true,},
   KhoiLuong: { type: Number,required: true,},
   TenLoaiHang: { type: String,required: true,},
-  GiamGia: { type: String,required: true,},
+  GiamGia: { type: Number,required: null,},
   TongChiPhi: { type: String,required: true,},
-  id_goidv: {type: String, default: null},
   id_KhachHang: {type: String, default: null},
 },{
   timestamps: true,

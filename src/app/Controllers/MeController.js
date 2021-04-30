@@ -120,7 +120,6 @@ class MeController {
             const _id = await verifyToken(token);
             var resultDN = await TaiKhoan.findOne({ _id }); //muc dich la lay role
             var resultGoiDV = await GoiDoanhNghiep.findOne({DeleteAt: "False" , _id: idGoiDichVuDoanhNghiep});
-            console.log(resultGoiDV);
             const { TenGoi, HanSuDung,SoDonHang } = resultGoiDV;
             const update = { TenGoi, HanSuDung,SoDonHang };
             if (resultDN != null) {
@@ -139,6 +138,103 @@ class MeController {
                     res.status(404).send({
                         "data": '',
                         "error": "No Package",
+                    });
+                }
+            } else {
+                res.status(404).send({
+                    "data": '',
+                    "error": "Not found user!",
+                });
+            }
+        }
+        // Post me/create-donhang
+        async TaoDonHang(req, res, next) {
+            const { TenNguoiNhan,  SoDienThoaiNguoiNhan, NoiLayHang, NoiGiaoHang,TrangThai,KhoiLuong,TenLoaiHang,TongChiPhi , GiamGia ,id_KhachHang } = req.body;
+            const token = req.get('Authorization').replace('Bearer ', '');
+            const _id = await verifyToken(token);
+            var update = {TenNguoiNhan,  SoDienThoaiNguoiNhan, NoiLayHang, NoiGiaoHang,TrangThai,KhoiLuong,TenLoaiHang,TongChiPhi,id_KhachHang};
+            var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+            if (result != null) {
+                const roleDT = result.Role;
+                if (roleDT == "KHACHHANG") {
+                    var resultKH = await KhachHang.findOne({id_account: _id});
+                    update.GiamGia = resultKH._doc.GiamGia;
+                    update.id_KhachHang = resultKH._doc._id;
+                    var resultOrder = await Order.create(update);
+                    res.status(200).send({
+                        "data": resultOrder,
+                        "error": "null",
+                    });
+                }
+                else {
+                    res.status(404).send({
+                        "data": "",
+                        "error": "No Authentication",
+                    });
+                }
+            } else {
+                res.status(404).send({
+                    "data": '',
+                    "error": "Not found user!",
+                });
+            }
+        }
+        // Put me/confirm-donhang
+        async XacNhanDonHang(req, res, next) {
+            var idDonHangKhachHang =  req.body.idDonHang;
+            const token = req.get('Authorization').replace('Bearer ', '');
+            const _id = await verifyToken(token);
+            var update = {TrangThai: "Đã Nhận Hàng"};
+            var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+            if (result != null) {
+                const roleDT = result.Role;
+                if (roleDT == "KHACHHANG") {
+                    var resultOrder = await Order.findOneAndUpdate({ _id: idDonHangKhachHang },
+                        update, {
+                        new: true
+                    });
+                    res.status(200).send({
+                        "data": resultOrder,
+                        "error": "null",
+                    });
+                }
+                else {
+                    res.status(404).send({
+                        "data": "",
+                        "error": "No Authentication",
+                    });
+                }
+            } else {
+                res.status(404).send({
+                    "data": '',
+                    "error": "Not found user!",
+                });
+            }
+        }
+
+        // Delete me/delete-donhang
+        async HuyDonHang(req, res, next) {
+            var idDonHangKhachHang =  req.body.idDonHang;
+            const token = req.get('Authorization').replace('Bearer ', '');
+            const _id = await verifyToken(token);
+            var update = {TrangThai: "Đã Hủy Đơn"};
+            var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+            if (result != null) {
+                const roleDT = result.Role;
+                if (roleDT == "KHACHHANG") {
+                    var resultOrder = await Order.findOneAndUpdate({ _id: idDonHangKhachHang },
+                        update, {
+                        new: true
+                    });
+                    res.status(200).send({
+                        "data": resultOrder,
+                        "error": "null",
+                    });
+                }
+                else {
+                    res.status(404).send({
+                        "data": "",
+                        "error": "No Authentication",
                     });
                 }
             } else {
