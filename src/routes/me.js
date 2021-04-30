@@ -12,6 +12,9 @@ router.put('/edit-address', diachiController.SuaDiaChi);
 router.delete('/delete-address', diachiController.XoaDiaChi);
 router.put('/choose_goidichvukhachhang',meController.ChonGoiDichVuKH);
 router.put('/choose_goidichvudoanhnghiep',meController.ChonGoiDichVuDN);
+router.post('/create-donhang', meController.TaoDonHang);
+router.put('/confirm-donhang', meController.XacNhanDonHang);
+router.delete('/delete-donhang', meController.HuyDonHang);
 
 
 // router.post('/register-doanhnghiep',meController.registerDoanhNghiep);
