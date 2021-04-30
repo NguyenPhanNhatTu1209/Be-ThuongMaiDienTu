@@ -77,7 +77,7 @@ class MeController {
         }
     }
     // PUT me/choose_goidichvukhachhang
-    async ChonGoiDichVu(req, res, next) {
+    async ChonGoiDichVuKH(req, res, next) {
         // const { TenDichVuKhachHang, KhoiLuongToiDa, HanSuDung,SoDonHang,GiamGia } = req.body;
         var idGoiDichVuKhachHang =  req.body.idGoiDV;
         const token = req.get('Authorization').replace('Bearer ', '');
@@ -111,6 +111,44 @@ class MeController {
             });
         }
     }
+
+        // PUT me/choose_goidichvudoanhnghiep
+        async ChonGoiDichVuDN(req, res, next) {
+            // const { TenGoi, HanSuDung,SoDonHang } = req.body;
+            var idGoiDichVuDoanhNghiep =  req.body.idGoiDN;
+            const token = req.get('Authorization').replace('Bearer ', '');
+            const _id = await verifyToken(token);
+            var resultDN = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+            var resultGoiDV = await GoiDoanhNghiep.findOne({DeleteAt: "False" , _id: idGoiDichVuDoanhNghiep});
+            console.log(resultGoiDV);
+            const { TenGoi, HanSuDung,SoDonHang } = resultGoiDV;
+            const update = { TenGoi, HanSuDung,SoDonHang };
+            if (resultDN != null) {
+                const roleDT = resultDN.Role;
+                if (roleDT == "DOANHNGHIEP") {
+                    var resultDN = await DoanhNghiep.findOneAndUpdate({ id_account: _id },
+                        update, {
+                        new: true
+                    });
+                    res.status(200).send({
+                        "data": resultDN,
+                        "error": "null",
+                    });
+                }
+                else {
+                    res.status(404).send({
+                        "data": '',
+                        "error": "No Package",
+                    });
+                }
+            } else {
+                res.status(404).send({
+                    "data": '',
+                    "error": "Not found user!",
+                });
+            }
+        }
+    
 
 
 }
