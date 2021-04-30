@@ -10,6 +10,8 @@ router.put('/update-goidoanhnghiep',adminController.updategoiDN);
 router.put('/update-goikhachhang',adminController.updategoiKH);
 router.delete('/deleted-goikhachhang',adminController.deleteGoiKH);
 router.delete('/deleted-goidoanhnghiep',adminController.deleteGoiDN);
+router.put('/confirm-doanhnghiep',adminController.DuyetDoanhNghiep);
+
 
 
 // router.post('/handle-form-actions',courseController.handleFormActions);   
