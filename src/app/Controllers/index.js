@@ -8,7 +8,7 @@ async function createToken(idUser) {
 async function createTokenTime(idUser) {
 
     const token = await jwt.sign({
-        exp: Math.floor(Date.now() + 3600000),
+        exp: Math.floor(Date.now() / 1000 ) + (60),
         data: idUser
 }, process.env.ACCESS_TOKEN);
     return token;

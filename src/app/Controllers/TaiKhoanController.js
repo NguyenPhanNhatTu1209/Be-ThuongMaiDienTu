@@ -1,3 +1,4 @@
+require('dotenv').config();
 const TaiKhoan = require("../Models/TaiKhoan");
 const KhachHang = require("../Models/KhachHang");
 const DoanhNghiep = require("../Models/DoanhNghiep");
@@ -182,9 +183,7 @@ class TaiKhoanController {
       }
     } catch (error) {
       console.log(error);
-      res.status(400).send({
-        error: error,
-      });
+      res.status(400).send("Token hết hạn");
     }
   }
 
