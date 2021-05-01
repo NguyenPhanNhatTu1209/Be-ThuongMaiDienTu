@@ -3,6 +3,7 @@ const KhachHang = require("../Models/KhachHang");
 const DoanhNghiep = require("../Models/DoanhNghiep");
 const GoiKhachHang = require("../Models/GoiKhachHang");
 const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
+const DiaChi = require("../Models/DiaChi");
 const Order = require("../Models/Order");
 const bcrypt = require("bcrypt");
 
@@ -41,7 +42,8 @@ class MeController {
     }
     catch (error)
     {
-      res.status(404).send({
+      console.log(error);
+      res.status(500).send({
         data: "",
         error: error,
       });
