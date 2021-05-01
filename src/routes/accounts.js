@@ -7,6 +7,8 @@ const taikhoanController = require('../app/Controllers/TaiKhoanController');
 router.post('/register-khachhang',taikhoanController.registerKhachHang);
 router.post('/register-doanhnghiep',taikhoanController.registerDoanhNghiep);
 router.post('/login',taikhoanController.login);
+router.post('/forgot-password',taikhoanController.QuenMatKhau);
+router.get('/reset-password/:token',taikhoanController.ResetPassword);
 
 // router.post('/handle-form-actions',courseController.handleFormActions);   
 // router.get('/:id/edit',courseController.edit);
