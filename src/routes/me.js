@@ -15,6 +15,7 @@ router.put('/choose_goidichvudoanhnghiep',meController.ChonGoiDichVuDN);
 router.post('/create-donhang', meController.TaoDonHang);
 router.put('/confirm-donhang', meController.XacNhanDonHang);
 router.delete('/delete-donhang', meController.HuyDonHang);
+router.put('/change-password', meController.ChangePassword);
 
 
 // router.post('/register-doanhnghiep',meController.registerDoanhNghiep);
