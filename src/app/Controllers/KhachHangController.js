@@ -3,7 +3,9 @@ const KhachHang = require('../Models/KhachHang');
 const DoanhNghiep = require('../Models/DoanhNghiep');
 const GoiKhachHang = require('../Models/GoiKhachHang');
 const GoiDoanhNghiep = require('../Models/GoiDoanhNghiep');
-const { createToken, verifyToken } = require('./index');
+const Order = require('../Models/Order');
+
+const { verifyToken } = require('./index');
 class KhachHangController {
 
     //get customers/show_goikhachhang 
@@ -22,6 +24,9 @@ class KhachHangController {
             });
         }
     }
+
+
+    
 }
 
 module.exports = new KhachHangController();

@@ -2,6 +2,7 @@ const TaiKhoan = require('../Models/TaiKhoan');
 const GoiKhachHang = require('../Models/GoiKhachHang');
 const GoiDoanhNghiep = require('../Models/GoiDoanhNghiep');
 const { verifyToken } = require('./index');
+const DoanhNghiep = require('../Models/DoanhNghiep');
 
 class AdminController {
     //Post admin/create-goikhachhang  
@@ -215,7 +216,7 @@ async deleteGoiDN(req, res, next) {
         if (result != null) {
             const roleDT = result.Role;
             if (roleDT == "ADMIN") {
-                var check = await GoiDoanhNghiep.findOne({ _id: idGoiDoanhNghiep });
+                var check = await Order.findOne({ _id: idGoiDoanhNghiep });
                 if (check != null) {
                     var resultKH = await GoiDoanhNghiep.findOneAndUpdate({ _id: idGoiDoanhNghiep },
                         updateValue, {
@@ -252,7 +253,55 @@ async deleteGoiDN(req, res, next) {
         });
     }
 }
-
+//Put admin/confirm-doanhnghiep
+async DuyetDoanhNghiep(req, res, next) {
+    try {
+        const token = req.get('Authorization').replace('Bearer ', '');
+        const { idDoanhNghiep } = req.body;
+        var updateValue = { idDoanhNghiep};
+        updateValue ={ TrangThai: "ACTIVE"}
+        const _id = await verifyToken(token);       
+        var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+        if (result != null) {
+            const roleDT = result.Role;
+            if (roleDT == "ADMIN") {
+                var check = await DoanhNghiep.findOne({ _id: idDoanhNghiep });
+                if (check != null) {
+                    var resultKH = await DoanhNghiep.findOneAndUpdate({ _id: idDoanhNghiep },
+                        updateValue, {
+                        new: true
+                    });
+                    res.status(200).send({
+                        "data": resultKH,
+                        "error": "null",
+                    });
+                }
+                else {
+                    res.status(400).send({
+                        "data": "",
+                        "error": "No Enterpriese",
+                    });
+                }
+            }
+            else {
+                res.status(400).send({
+                    "data": "",
+                    "error": "No Authentication",
+                });
+            }
+        } else {
+            res.status(404).send({
+                "data": '',
+                "error": "Not found user!",
+            });
+        }
+    } catch (error) {
+        res.status(500).send({
+            "data": '',
+            "error": error,
+        });
+    }
+}
 
 }
 
