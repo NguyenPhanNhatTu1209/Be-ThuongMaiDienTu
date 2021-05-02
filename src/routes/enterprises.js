@@ -15,14 +15,12 @@ router.delete(
   "/delete-shipping-package",
   doanhnghiepController.DeleteShippingPackage
 );
+router.get("/show-shipping-package", doanhnghiepController.ShowShippingPackage);
 router.get(
-  "/show-shipping-package",
-  doanhnghiepController.UpdateShippingPackage
+  "/show-shipping-package-by-enterprise",
+  doanhnghiepController.ShowShippingPackageByEnterprise
 );
-router.get(
-  "/show-goidoanhnghiep",
-  doanhnghiepController.showGoiDN
-);
+router.get("/show-goidoanhnghiep", doanhnghiepController.showGoiDN);
 
 //router.get('/create', khachhangController.create);
 // router.post('/register',doanhnghiepController.register);
