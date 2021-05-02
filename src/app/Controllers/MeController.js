@@ -5,6 +5,7 @@ const GoiKhachHang = require("../Models/GoiKhachHang");
 const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
 const DiaChi = require("../Models/DiaChi");
 const Order = require("../Models/Order");
+const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
 const bcrypt = require("bcrypt");
 
 const { createToken, verifyToken } = require("./index");
@@ -182,127 +183,7 @@ class MeController {
       });
     }
   }
-  // Post me/create-donhang
-  async TaoDonHang(req, res, next) {
-    const {
-      TenNguoiNhan,
-      SoDienThoaiNguoiNhan,
-      NoiLayHang,
-      NoiGiaoHang,
-      TrangThai,
-      KhoiLuong,
-      TenLoaiHang,
-      TongChiPhi,
-      GiamGia,
-      id_KhachHang,
-    } = req.body;
-    const token = req.get("Authorization").replace("Bearer ", "");
-    const _id = await verifyToken(token);
-    var update = {
-      TenNguoiNhan,
-      SoDienThoaiNguoiNhan,
-      NoiLayHang,
-      NoiGiaoHang,
-      TrangThai,
-      KhoiLuong,
-      TenLoaiHang,
-      TongChiPhi,
-      id_KhachHang,
-    };
-    var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
-    if (result != null) {
-      const roleDT = result.Role;
-      if (roleDT == "KHACHHANG") {
-        var resultKH = await KhachHang.findOne({ id_account: _id });
-        update.GiamGia = resultKH._doc.GiamGia;
-        update.id_KhachHang = resultKH._doc._id;
-        var resultOrder = await Order.create(update);
-        res.status(200).send({
-          data: resultOrder,
-          error: "null",
-        });
-      } else {
-        res.status(404).send({
-          data: "",
-          error: "No Authentication",
-        });
-      }
-    } else {
-      res.status(404).send({
-        data: "",
-        error: "Not found user!",
-      });
-    }
-  }
-  // Put me/confirm-donhang
-  async XacNhanDonHang(req, res, next) {
-    var idDonHangKhachHang = req.body.idDonHang;
-    const token = req.get("Authorization").replace("Bearer ", "");
-    const _id = await verifyToken(token);
-    var update = { TrangThai: "Đã Nhận Hàng" };
-    var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
-    if (result != null) {
-      const roleDT = result.Role;
-      if (roleDT == "KHACHHANG") {
-        var resultOrder = await Order.findOneAndUpdate(
-          { _id: idDonHangKhachHang },
-          update,
-          {
-            new: true,
-          }
-        );
-        res.status(200).send({
-          data: resultOrder,
-          error: "null",
-        });
-      } else {
-        res.status(404).send({
-          data: "",
-          error: "No Authentication",
-        });
-      }
-    } else {
-      res.status(404).send({
-        data: "",
-        error: "Not found user!",
-      });
-    }
-  }
 
-  // Delete me/delete-donhang
-  async HuyDonHang(req, res, next) {
-    var idDonHangKhachHang = req.body.idDonHang;
-    const token = req.get("Authorization").replace("Bearer ", "");
-    const _id = await verifyToken(token);
-    var update = { TrangThai: "Đã Hủy Đơn" };
-    var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
-    if (result != null) {
-      const roleDT = result.Role;
-      if (roleDT == "KHACHHANG") {
-        var resultOrder = await Order.findOneAndUpdate(
-          { _id: idDonHangKhachHang },
-          update,
-          {
-            new: true,
-          }
-        );
-        res.status(200).send({
-          data: resultOrder,
-          error: "null",
-        });
-      } else {
-        res.status(404).send({
-          data: "",
-          error: "No Authentication",
-        });
-      }
-    } else {
-      res.status(404).send({
-        data: "",
-        error: "Not found user!",
-      });
-    }
-  }
 
   //Put me/change-password
   async ChangePassword(req, res, next) {
@@ -344,6 +225,31 @@ class MeController {
       }
     } catch (error) {
       res.status(500).send({
+        error: error,
+      });
+    }
+  }
+
+
+   //get me/show-product-type 
+   async ShowProductType(req, res, next) {
+    try {
+      var result = await LoaiHangHoaSanPham.find({Status: "ACTIVE"}); 
+      if (result != null) {
+        res.status(200).send({
+          data: result,
+          error: "null",
+        });
+        
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found product type",
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
         error: error,
       });
     }

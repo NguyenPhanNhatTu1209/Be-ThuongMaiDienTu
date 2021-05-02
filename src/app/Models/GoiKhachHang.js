@@ -9,7 +9,7 @@ const GoiKhachHang = new Schema(
     ChiPhi: { type: String, required: true },
     HanSuDung: { type: Number, required: true },
     SoDonHang: { type: Number, required: true },
-    GiamGia: { type: Number, required: true },
+    GiamGia: { type: Number, default: 0 },
     DeleteAt: { type: String, default: "False" },
   },
   {
