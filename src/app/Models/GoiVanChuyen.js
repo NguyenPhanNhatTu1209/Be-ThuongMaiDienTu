@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 
@@ -18,9 +18,9 @@ const GoiVanChuyen = new Schema({
 // hello
 // add plugin
 // mongoose.plugin(slug);
-// Course.plugin(mongooseDelete, { 
+// Course.plugin(mongooseDelete, {
 //   overrideMethods: 'all',
 //    deletedAt : true,
 //  });
 
-module.exports=mongoose.model('shipping_package', GoiVanChuyen);
+module.exports = mongoose.model("shipping_package", GoiVanChuyen);

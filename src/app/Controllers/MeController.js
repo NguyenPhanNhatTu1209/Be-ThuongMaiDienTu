@@ -3,6 +3,7 @@ const KhachHang = require("../Models/KhachHang");
 const DoanhNghiep = require("../Models/DoanhNghiep");
 const GoiKhachHang = require("../Models/GoiKhachHang");
 const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
+const DiaChi = require("../Models/DiaChi");
 const Order = require("../Models/Order");
 const bcrypt = require("bcrypt");
 
@@ -10,8 +11,7 @@ const { createToken, verifyToken } = require("./index");
 class MeController {
   //get me/information / get || post put delete
   async information(req, res, next) {
-    try
-    {
+    try {
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
       var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
@@ -38,17 +38,15 @@ class MeController {
           error: "Not found user!",
         });
       }
-    }
-    catch (error)
-    {
-      res.status(404).send({
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
         data: "",
         error: error,
       });
     }
-
   }
-
+  //put me/edit-profile
   async editProfile(req, res, next) {
     const { Ten, SoDienThoai, DiaChi } = req.body;
     var updateValue = { SoDienThoai, DiaChi };
@@ -308,42 +306,46 @@ class MeController {
 
   //Put me/change-password
   async ChangePassword(req, res, next) {
-    const passwordOld = req.body.PasswordOld;
-    const passwordNew = req.body.PasswordNew;
-    const confirmPassword = req.body.ConfirmPassword;
-    const token = req.get("Authorization").replace("Bearer ", "");
-    const _id = await verifyToken(token);
-    var result = await TaiKhoan.findOne({ _id }); 
-    if (result != null) {
-      const isEqualPassword = await bcrypt.compare(passwordOld, result.Password);
-      if(isEqualPassword)
-      {
-        if(passwordNew == confirmPassword)
-        {
-          const hashPassword = await bcrypt.hash(passwordNew, 5);
-          var updateValue= {Password: hashPassword}
-          await TaiKhoan.findOneAndUpdate({ _id},
-            updateValue, {
-            new: true
-        });
-        res.status(200).send({
-          error: "Change Password Success",
-        });
-        }
-        else
-        {
+    try {
+      const passwordOld = req.body.PasswordOld;
+      const passwordNew = req.body.PasswordNew;
+      const confirmPassword = req.body.ConfirmPassword;
+      const token = req.get("Authorization").replace("Bearer ", "");
+      console.log(token);
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id });
+      if (result != null) {
+        const isEqualPassword = await bcrypt.compare(
+          passwordOld,
+          result.Password
+        );
+        if (isEqualPassword) {
+          if (passwordNew == confirmPassword) {
+            const hashPassword = await bcrypt.hash(passwordNew, 5);
+            result.Password = hashPassword;
+            result.save();
+            // var updateValue = { Password: hashPassword };
+            // await TaiKhoan.findOneAndUpdate({ _id }, updateValue, {
+            //   new: true,
+            // });
+            res.status(200).send({
+              error: "Change Password Success",
+            });
+          } else {
+            res.status(400).send({
+              error: "New password is not same same password confirm",
+            });
+          }
+        } else {
           res.status(400).send({
-            error: "New password is not same same password confirm",
+            error: " Wrong Old Password ",
           });
         }
       }
-      else{
-        res.status(400).send({
-          error: " Wrong Old Password ",
-        });
-      }
-    
-
+    } catch (error) {
+      res.status(500).send({
+        error: error,
+      });
     }
   }
 }
