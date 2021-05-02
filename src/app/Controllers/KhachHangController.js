@@ -9,7 +9,7 @@ const { verifyToken } = require("./index");
 class KhachHangController {
   //get customers/show_goikhachhang
   async showGoiKH(req, res, next) {
-    var result = await GoiKhachHang.find({ DeleteAt: "False" }); 
+    var result = await GoiKhachHang.find({ DeleteAt: "False" });
     if (result != null) {
       res.status(200).send({
         data: result,
