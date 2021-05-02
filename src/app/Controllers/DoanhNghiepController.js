@@ -1,10 +1,28 @@
 const DoanhNghiep = require("../Models/DoanhNghiep");
 const GoiVanChuyen = require("../Models/GoiVanChuyen");
 const TaiKhoan = require("../Models/TaiKhoan");
+const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep")
 const { verifyToken } = require("../Controllers/index");
 const { get } = require("../../routes/enterprises");
 
 class DoanhNghiepController {
+
+    //GET enterprises/show-goidoanhnghiep
+    async showGoiDN(req, res, next) {
+      var result = await GoiDoanhNghiep.find({DeleteAt: "False"});
+      if (result != null) {
+        res.status(200).send({
+          "data": result,
+          "error": "null",
+        });
+  
+      } else {
+        res.status(404).send({
+          "data": '',
+          "error": "No package",
+        });
+      }
+    }
   async CreateShippingPackage(req, res, next) {
     try {
       var createData = req.body;

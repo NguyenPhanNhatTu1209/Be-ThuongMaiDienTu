@@ -19,6 +19,10 @@ router.get(
   "/show-shipping-package",
   doanhnghiepController.UpdateShippingPackage
 );
+router.get(
+  "/show-goidoanhnghiep",
+  doanhnghiepController.showGoiDN
+);
 
 //router.get('/create', khachhangController.create);
 // router.post('/register',doanhnghiepController.register);
