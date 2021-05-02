@@ -1,28 +1,28 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-
-
-
-const KhachHang = new Schema({
-  TenKhachHang: {type:String, required: true,},
-  Email: {type:String,required: true,},
-  SoDienThoai: { type: String,required: true,},
-  TenDichVuKhachHang: {type:String, default: null,},
-  KhoiLuongToiDa: {type:String, default: null,},
-  HanSuDung: { type: Number,default: null,},
-  SoDonHang: { type: Number,default: null,},
-  GiamGia: { type: Number,default: null,},
-  id_account: { type: String,required: true,},
-},{
-  timestamps: true,
-});
+const KhachHang = new Schema(
+  {
+    TenKhachHang: { type: String, required: true },
+    Email: { type: String, required: true },
+    SoDienThoai: { type: String, required: true },
+    TenDichVuKhachHang: { type: String, default: null },
+    KhoiLuongToiDa: { type: String, default: null },
+    HanSuDung: { type: Number, default: null },
+    SoDonHang: { type: Number, default: null },
+    GiamGia: { type: Number, default: null },
+    id_account: { type: String, required: true },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 // add plugin
 // mongoose.plugin(slug);
-// Course.plugin(mongooseDelete, { 
+// Course.plugin(mongooseDelete, {
 //   overrideMethods: 'all',
 //    deletedAt : true,
 //  });
 
-module.exports=mongoose.model('customer', KhachHang);
+module.exports = mongoose.model("customer", KhachHang);

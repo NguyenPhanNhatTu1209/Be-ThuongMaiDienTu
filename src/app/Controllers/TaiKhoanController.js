@@ -1,10 +1,15 @@
-require('dotenv').config();
+require("dotenv").config();
 const TaiKhoan = require("../Models/TaiKhoan");
 const KhachHang = require("../Models/KhachHang");
 const DoanhNghiep = require("../Models/DoanhNghiep");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
-const { createToken, verifyToken, createTokenTime, makePassword } = require("./index");
+const {
+  createToken,
+  verifyToken,
+  createTokenTime,
+  makePassword,
+} = require("./index");
 
 class TaiKhoanController {
   //Post auth/login
@@ -109,6 +114,8 @@ class TaiKhoanController {
       });
     }
   }
+
+  //Post auth/forgot-password
   async QuenMatKhau(req, res, next) {
     // const { Email, Password, TenDoanhNghiep, SoDienThoai, DiaChi, GiayPhep } = req.body;
     try {
@@ -155,7 +162,7 @@ class TaiKhoanController {
       });
     }
   }
-
+  //Post auth/reset-password/:token
   async ResetPassword(req, res, next) {
     // const { Email, Password, TenDoanhNghiep, SoDienThoai, DiaChi, GiayPhep } = req.body;
     try {
@@ -165,17 +172,13 @@ class TaiKhoanController {
       var result = await TaiKhoan.findOne({ _id });
       console.log(result);
       if (result != null) {
-
-        var passwordNew= makePassword(6);
+        var passwordNew = makePassword(6);
         const hashPassword = await bcrypt.hash(passwordNew, 5);
-        var updateValue= {Password: hashPassword}
-        await TaiKhoan.findOneAndUpdate({ _id},
-            updateValue, {
-            new: true
+        var updateValue = { Password: hashPassword };
+        await TaiKhoan.findOneAndUpdate({ _id }, updateValue, {
+          new: true,
         });
-        res.status(200).send(
-            `Mật khẩu mới của bạn là: ${passwordNew}`
-        )
+        res.status(200).send(`Mật khẩu mới của bạn là: ${passwordNew}`);
       } else {
         res.status(400).send({
           error: "No Email",
@@ -186,8 +189,6 @@ class TaiKhoanController {
       res.status(400).send("Token hết hạn");
     }
   }
-
-
 }
 
 module.exports = new TaiKhoanController();
