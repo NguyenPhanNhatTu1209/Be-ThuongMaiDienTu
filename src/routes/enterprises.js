@@ -3,22 +3,11 @@ const router = express.Router();
 
 const doanhnghiepController = require("../app/Controllers/DoanhNghiepController.js");
 
-router.post(
-  "/create-shipping-package",
-  doanhnghiepController.CreateShippingPackage
-);
-router.put(
-  "/update-shipping-package",
-  doanhnghiepController.UpdateShippingPackage
-);
-router.delete(
-  "/delete-shipping-package",
-  doanhnghiepController.DeleteShippingPackage
-);
-router.get(
-  "/show-shipping-package",
-  doanhnghiepController.UpdateShippingPackage
-);
+router.post('/create-shipping-package', doanhnghiepController.CreateShippingPackage);
+router.put('/update-shipping-package', doanhnghiepController.UpdateShippingPackage);
+router.delete('/delete-shipping-package', doanhnghiepController.DeleteShippingPackage);
+router.get('/show-shipping-package', doanhnghiepController.ShowShippingPackage);
+router.get('/show-shipping-package-by-enterprise', doanhnghiepController.ShowShippingPackageByEnterprise);
 
 //router.get('/create', khachhangController.create);
 // router.post('/register',doanhnghiepController.register);
