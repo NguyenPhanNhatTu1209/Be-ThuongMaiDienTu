@@ -4,6 +4,7 @@ const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
 const { verifyToken } = require("./index");
 const DoanhNghiep = require("../Models/DoanhNghiep");
 const KhachHang = require("../Models/KhachHang");
+const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
 
 class AdminController {
   //Post admin/create-goikhachhang
@@ -485,6 +486,139 @@ class AdminController {
       });
     }
   }
+
+   //Post admin/create-product-type
+   async CreateProductType(req, res, next) {
+    try
+    {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var resultLoaiSanPham = await LoaiHangHoaSanPham.create(req.body);
+          res.status(200).send({
+            data: resultLoaiSanPham,
+            error: "null",
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
+      }
+    }
+    catch (error)
+    {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
+    }
+  }
+
+     //Put admin/update-product-type
+     async UpdateProductType(req, res, next) {
+      try
+      {
+        const _idLoaiSanPham = req.body.idLoaiSanPham;
+        const {LoaiHangHoa,SoKy} = req.body;
+        const token = req.get("Authorization").replace("Bearer ", "");
+        const _id = await verifyToken(token);
+        var updateValue = {
+          LoaiHangHoa,
+          SoKy,
+        };
+        var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+        if (result != null) {
+          const roleDT = result.Role;
+          if (roleDT == "ADMIN") { 
+            var resultLoaiSanPham = await LoaiHangHoaSanPham.findOneAndUpdate(
+              { _id: _idLoaiSanPham},
+              updateValue,
+              {
+                new: true,
+              }
+            );
+            res.status(200).send({
+              data: resultLoaiSanPham,
+              error: "null",
+            });
+          } else {
+            res.status(404).send({
+              data: "",
+              error: "No Authentication",
+            });
+          }
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "Not found user!",
+          });
+        }
+      }
+      catch (error)
+      {
+        res.status(500).send({
+          data: "",
+          error: error,
+        });
+      }
+    }
+     //Delete admin/delete-product-type
+     async DeleteProductType(req, res, next) {
+      try
+      {
+        const _idLoaiSanPham = req.body.idLoaiSanPham;
+        const token = req.get("Authorization").replace("Bearer ", "");
+        const _id = await verifyToken(token);
+        var updateValue = {
+          Status: "INACTIVE"
+        };
+        var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+        if (result != null) {
+          const roleDT = result.Role;
+          if (roleDT == "ADMIN") { 
+            var resultLoaiSanPham = await LoaiHangHoaSanPham.findOneAndUpdate(
+              { _id: _idLoaiSanPham},
+              updateValue,
+              {
+                new: true,
+              }
+            );
+            res.status(200).send({
+              data: resultLoaiSanPham,
+              error: "null",
+            });
+          } else {
+            res.status(404).send({
+              data: "",
+              error: "No Authentication",
+            });
+          }
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "Not found user!",
+          });
+        }
+      }
+      catch (error)
+      {
+        res.status(500).send({
+          data: "",
+          error: error,
+        });
+      }
+    }
+
 }
 
 module.exports = new AdminController();

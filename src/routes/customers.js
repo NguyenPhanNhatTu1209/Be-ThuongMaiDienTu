@@ -4,14 +4,7 @@ const router = express.Router();
 const khachhangController = require("../app/Controllers/KhachHangController.js");
 
 router.get("/show_goikhachhang", khachhangController.showGoiKH);
-// router.post('/register',khachhangController.register);
-//router.get('/information',khachhangController.information);
-
-// router.post('/handle-form-actions',courseController.handleFormActions);
-// router.get('/:id/edit',courseController.edit);
-// router.put('/:id',courseController.update);
-// router.patch('/:id/restore', courseController.restore);
-// router.delete('/:id',courseController.delete);
-// router.delete('/:id/force',courseController.forceDelete);
-// router.get('/:slug', courseController.show);
+router.post("/create-donhang", khachhangController.TaoDonHang);
+router.put("/confirm-donhang", khachhangController.XacNhanDonHang);
+router.delete("/delete-donhang", khachhangController.HuyDonHang);
 module.exports = router;
