@@ -11,7 +11,7 @@ const DoanhNghiep = new Schema(
     GiayPhep: { type: String, required: true },
     TrangThai: { type: String, required: true },
     TenGoi: { type: String, default: null },
-    HanSuDung: { type: Number, default: null },
+    NgayHetHan: { type: Date, default: null },
     SoDonHang: { type: Number, default: null },
     id_account: { type: String, required: true },
   },

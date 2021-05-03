@@ -8,7 +8,7 @@ const KhachHang = new Schema(
     SoDienThoai: { type: String, required: true },
     TenDichVuKhachHang: { type: String, default: null },
     KhoiLuongToiDa: { type: Number, default: null },
-    HanSuDung: { type: Number, default: null },
+    NgayHetHan: { type: Date, default: null },
     SoDonHang: { type: Number, default: null },
     GiamGia: { type: Number, default: 0 },
     id_account: { type: String, required: true },
