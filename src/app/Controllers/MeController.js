@@ -104,14 +104,18 @@ class MeController {
     const {
       TenDichVuKhachHang,
       KhoiLuongToiDa,
-      HanSuDung,
       SoDonHang,
       GiamGia,
     } = resultGoiDV;
+    var soNgay = resultGoiDV.HanSuDung;
+    // Create new Date instance
+    var date = new Date();
+    // Add a day
+    date.setDate(date.getDate() + soNgay);
     const update = {
       TenDichVuKhachHang,
       KhoiLuongToiDa,
-      HanSuDung,
+      NgayHetHan: date,
       SoDonHang,
       GiamGia,
     };
@@ -154,8 +158,13 @@ class MeController {
       DeleteAt: "False",
       _id: idGoiDichVuDoanhNghiep,
     });
-    const { TenGoi, HanSuDung, SoDonHang } = resultGoiDV;
-    const update = { TenGoi, HanSuDung, SoDonHang };
+    const { TenGoi, SoDonHang } = resultGoiDV;
+    var soNgay = resultGoiDV.HanSuDung;
+    // Create new Date instance
+    var date = new Date();
+    // Add a day
+    date.setDate(date.getDate() + soNgay);
+    const update = { TenGoi, NgayHetHan: date, SoDonHang };
     if (resultDN != null) {
       const roleDT = resultDN.Role;
       if (roleDT == "DOANHNGHIEP") {
