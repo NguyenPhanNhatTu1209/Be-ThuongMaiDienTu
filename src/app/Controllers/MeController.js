@@ -210,7 +210,7 @@ class MeController {
             //   new: true,
             // });
             res.status(200).send({
-              error: "Change Password Success",
+              Success: "Change Password Success",
             });
           } else {
             res.status(400).send({

@@ -5,6 +5,8 @@ const GoiKhachHang = require("../Models/GoiKhachHang");
 const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
 const Order = require("../Models/Order");
 const GoiVanChuyen = require("../Models/GoiVanChuyen");
+const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
+
 const { verifyToken } = require("./index");
 class KhachHangController {
   //get customers/show_goikhachhang
@@ -26,15 +28,18 @@ class KhachHangController {
   // Post me/create-donhang
   async TaoDonHang(req, res, next) {
     try {
-      const {
+      var {
         TenNguoiNhan,
         SoDienThoaiNguoiNhan,
         NoiLayHang,
         NoiGiaoHang,
+        TrangThai,
         KhoiLuong,
+        LoaiHangHoa,
         TenLoaiHang,
-        TongChiPhi,
         GiamGia,
+        TongChiPhi,
+        ThanhToan,
         id_KhachHang,
         id_DoanhNghiep,
         id_GoiShipping,
@@ -46,9 +51,13 @@ class KhachHangController {
         SoDienThoaiNguoiNhan,
         NoiLayHang,
         NoiGiaoHang,
+        TrangThai,
         KhoiLuong,
+        LoaiHangHoa,
         TenLoaiHang,
+        GiamGia,
         TongChiPhi,
+        ThanhToan,
         id_KhachHang,
         id_DoanhNghiep,
         id_GoiShipping,
@@ -56,28 +65,100 @@ class KhachHangController {
       var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
       if (result != null) {
         const roleDT = result.Role;
-        var resultGoiShipping = await GoiVanChuyen.findOne({
-          _id: update.id_GoiShipping,
-        });
         if (roleDT == "KHACHHANG") {
           var resultKH = await KhachHang.findOne({ id_account: _id });
-          const giamGiaTaiKhoan = resultKH._doc.GiamGia;
-          const giamGiaShipping = resultGoiShipping._doc.KhuyenMai;
-
-          update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
+          var resultGoiShipping = await GoiVanChuyen.findOne({
+            _id: update.id_GoiShipping,
+          });
+          var resultLoaiHangHoa = await LoaiHangHoaSanPham.findOne({
+            _id: resultGoiShipping._doc.IdLoaiHangHoa,
+          });
+          var giamGiaTaiKhoan = resultKH._doc.GiamGia;
+          var giamGiaShipping = resultGoiShipping._doc.KhuyenMai;
+          update.LoaiHangHoa = resultLoaiHangHoa.LoaiHangHoa;
+          var khoiLuongBatBuoc = resultLoaiHangHoa.SoKy;
           update.id_KhachHang = resultKH._doc._id;
+          update.id_DoanhNghiep = resultGoiShipping._doc.IdCongTy;
+          var resultDoanhNghiep = await DoanhNghiep.findOne({
+            _id: update.id_DoanhNghiep,
+          });
           if(update.KhoiLuong > resultKH._doc.KhoiLuongToiDa)
           {
-            res.status(404).send({
-              data: "",
-              error: "No Authentication",
-            });
+            if(update.KhoiLuong > khoiLuongBatBuoc)
+            {
+              res.status(400).send({
+                data: "",
+                error: "Gói vận chuyển này không thích hợp với số ký",
+              });
+            }
+            else
+            {
+              giamGiaTaiKhoan= 0;
+              update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
+              var tongGiamgia = update.GiamGia;
+              var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
+              chiPhiVanChuyen = chiPhiVanChuyen-((chiPhiVanChuyen*tongGiamgia)/100);
+              update.TongChiPhi = String(chiPhiVanChuyen);
+              var soLuongDonHangDoanhNghiep = resultDoanhNghiep._doc.SoDonHang;
+              soLuongDonHangDoanhNghiep = soLuongDonHangDoanhNghiep - 1;
+              resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
+              await DoanhNghiep.findOneAndUpdate(
+                {_id:   update.id_DoanhNghiep},
+                resultDoanhNghiep._doc,
+                {
+                  new: true,
+                }
+              );
+              var resultOrder = await Order.create(update);
+              res.status(200).send({
+                data: resultOrder,
+                error: "Gói khách hàng không được sử dụng",
+              });
+            }
           }
-          var resultOrder = await Order.create(update);
-          res.status(200).send({
-            data: resultOrder,
-            error: "null",
-          });
+          else
+          {
+            if(update.KhoiLuong > khoiLuongBatBuoc)
+            {
+              res.status(400).send({
+                data: "",
+                error: "Gói vận chuyển này không thích hợp với số ký",
+              });
+            }
+            else
+            {
+              update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
+              var tongGiamgia = update.GiamGia;
+              var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
+              chiPhiVanChuyen = chiPhiVanChuyen-((chiPhiVanChuyen*tongGiamgia)/100);
+              update.TongChiPhi = String(chiPhiVanChuyen);
+              var soLuongDonHangDoanhNghiep = resultDoanhNghiep._doc.SoDonHang;
+              soLuongDonHangDoanhNghiep = soLuongDonHangDoanhNghiep - 1;
+              resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
+              await DoanhNghiep.findOneAndUpdate(
+                {_id:   update.id_DoanhNghiep},
+                resultDoanhNghiep._doc,
+                {
+                  new: true,
+                }
+              );
+              var soLuongDonHang = resultKH._doc.SoDonHang;
+              soLuongDonHang = soLuongDonHang-1;
+              resultKH._doc.SoDonHang = soLuongDonHang;
+              await KhachHang.findOneAndUpdate(
+                { id_account: _id },
+                resultKH._doc,
+                {
+                  new: true,
+                }
+              );
+              var resultOrder = await Order.create(update);
+              res.status(200).send({
+                data: resultOrder,
+                error: "null",
+              });
+            }
+          }
         } else {
           res.status(404).send({
             data: "",

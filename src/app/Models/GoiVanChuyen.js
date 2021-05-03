@@ -4,11 +4,12 @@ const Schema = mongoose.Schema;
 
 
 const GoiVanChuyen = new Schema({
-  LoaiHangHoa: { type: String,required: true,},
+  IdLoaiHangHoa: { type: String,required: true,},
   LoaiVanChuyen: {type:String, required: true,},
   NoiNhan: {type: String,required: true,},
   NoiGiao: {type: String,required: true,},
   KhuyenMai: { type: Number, default: 0,},
+  ChiPhi: {type: String,required: true,},
   IdCongTy: { type: String, required: true,},
   Status: {type: String, default: "ACTIVE"},
 },{
