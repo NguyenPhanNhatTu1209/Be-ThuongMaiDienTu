@@ -24,7 +24,6 @@ class KhachHangController {
       });
     }
   }
-
   // Post me/create-donhang
   async TaoDonHang(req, res, next) {
     try {
@@ -82,7 +81,11 @@ class KhachHangController {
           var resultDoanhNghiep = await DoanhNghiep.findOne({
             _id: update.id_DoanhNghiep,
           });
-          if(update.KhoiLuong > resultKH._doc.KhoiLuongToiDa)
+          var ngayHetHanGoiKhachHang = resultKH._doc.NgayHetHan;
+          var ngayThucTai = Date.now();
+          var soLuongDonHangGoiKhachHang = resultKH._doc.SoDonHang;
+          var ngayHetHanGoiDoanhNghiep = resultDoanhNghiep._doc.NgayHetHan;
+          if(update.KhoiLuong > resultKH._doc.KhoiLuongToiDa || ngayThucTai> ngayHetHanGoiKhachHang || soLuongDonHangGoiKhachHang == 0)
           {
             if(update.KhoiLuong > khoiLuongBatBuoc)
             {
@@ -98,22 +101,33 @@ class KhachHangController {
               var tongGiamgia = update.GiamGia;
               var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
               chiPhiVanChuyen = chiPhiVanChuyen-((chiPhiVanChuyen*tongGiamgia)/100);
+              var tienDo = chiPhiVanChuyen/23.055;
               update.TongChiPhi = String(chiPhiVanChuyen);
               var soLuongDonHangDoanhNghiep = resultDoanhNghiep._doc.SoDonHang;
-              soLuongDonHangDoanhNghiep = soLuongDonHangDoanhNghiep - 1;
-              resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
-              await DoanhNghiep.findOneAndUpdate(
-                {_id:   update.id_DoanhNghiep},
-                resultDoanhNghiep._doc,
-                {
-                  new: true,
-                }
-              );
-              var resultOrder = await Order.create(update);
-              res.status(200).send({
-                data: resultOrder,
-                error: "Gói khách hàng không được sử dụng",
-              });
+              if(soLuongDonHangDoanhNghiep>0 && ngayThucTai <= ngayHetHanGoiDoanhNghiep)
+              {
+                soLuongDonHangDoanhNghiep = soLuongDonHangDoanhNghiep - 1;
+                resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
+                await DoanhNghiep.findOneAndUpdate(
+                  {_id:   update.id_DoanhNghiep},
+                  resultDoanhNghiep._doc,
+                  {
+                    new: true,
+                  }
+                );
+                var resultOrder = await Order.create(update);
+                res.status(200).send({
+                  data: resultOrder,
+                  error: "Gói khách hàng không được sử dụng vì không hợp lệ",
+                });
+              }
+              else
+              {
+                res.status(200).send({
+                  data: resultOrder,
+                  error: "Gói vận chuyển hết hiệu lực vui lòng chọn gói khác",
+                });
+              }
             }
           }
           else
@@ -127,36 +141,49 @@ class KhachHangController {
             }
             else
             {
+              
               update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
               var tongGiamgia = update.GiamGia;
               var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
               chiPhiVanChuyen = chiPhiVanChuyen-((chiPhiVanChuyen*tongGiamgia)/100);
+              var tienDo = chiPhiVanChuyen/23.055;
               update.TongChiPhi = String(chiPhiVanChuyen);
               var soLuongDonHangDoanhNghiep = resultDoanhNghiep._doc.SoDonHang;
-              soLuongDonHangDoanhNghiep = soLuongDonHangDoanhNghiep - 1;
-              resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
-              await DoanhNghiep.findOneAndUpdate(
-                {_id:   update.id_DoanhNghiep},
-                resultDoanhNghiep._doc,
-                {
-                  new: true,
-                }
-              );
-              var soLuongDonHang = resultKH._doc.SoDonHang;
-              soLuongDonHang = soLuongDonHang-1;
-              resultKH._doc.SoDonHang = soLuongDonHang;
-              await KhachHang.findOneAndUpdate(
-                { id_account: _id },
-                resultKH._doc,
-                {
-                  new: true,
-                }
-              );
-              var resultOrder = await Order.create(update);
-              res.status(200).send({
-                data: resultOrder,
-                error: "null",
-              });
+              if(soLuongDonHangDoanhNghiep>0 && ngayThucTai <= ngayHetHanGoiDoanhNghiep)
+              {
+                soLuongDonHangDoanhNghiep = soLuongDonHangDoanhNghiep - 1;
+                resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
+                await DoanhNghiep.findOneAndUpdate(
+                  {_id:   update.id_DoanhNghiep},
+                  resultDoanhNghiep._doc,
+                  {
+                    new: true,
+                  }
+                );
+                var soLuongDonHang = resultKH._doc.SoDonHang;
+                soLuongDonHang = soLuongDonHang-1;
+                resultKH._doc.SoDonHang = soLuongDonHang;
+                await KhachHang.findOneAndUpdate(
+                  { id_account: _id },
+                  resultKH._doc,
+                  {
+                    new: true,
+                  }
+                );
+                var resultOrder = await Order.create(update);
+                res.status(200).send({
+                  data: resultOrder,
+                  error: "null",
+                });
+              }
+              else
+              {
+                res.status(200).send({
+                  data: resultOrder,
+                  error: "Gói vận chuyển hết hiệu lực vui lòng chọn gói khác",
+                });
+              }
+              
             }
           }
         } else {
@@ -222,6 +249,29 @@ class KhachHangController {
     if (result != null) {
       const roleDT = result.Role;
       if (roleDT == "KHACHHANG") {
+        var resultdonHang = await Order.findOne({ _id: idDonHangKhachHang });
+        var idCongTy = resultdonHang._doc.id_DoanhNghiep;
+        var idKhachHang = resultdonHang._doc.id_KhachHang;
+        var resultKhachHang = await KhachHang.findOne({ _id: idKhachHang });
+        var resultDoanhNghiep = await DoanhNghiep.findOne({ _id: idCongTy });
+        var soDonHangKH = resultKhachHang._doc.SoDonHang +1 ;
+        var SoDonHangDN = resultDoanhNghiep._doc.SoDonHang +1;
+        var updateKH = { SoDonHang: soDonHangKH };
+        var updateDN = { SoDonHang: SoDonHangDN };
+        await KhachHang.findOneAndUpdate(
+          { _id: idKhachHang },
+          updateKH,
+          {
+            new: true,
+          }
+        );
+        await DoanhNghiep.findOneAndUpdate(
+          { _id: idCongTy },
+          updateDN,
+          {
+            new: true,
+          }
+        );
         var resultOrder = await Order.findOneAndUpdate(
           { _id: idDonHangKhachHang },
           update,
