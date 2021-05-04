@@ -6,6 +6,7 @@ const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
 const DiaChi = require("../Models/DiaChi");
 const Order = require("../Models/Order");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
+const paypal = require("paypal-rest-sdk");
 const bcrypt = require("bcrypt");
 
 const { createToken, verifyToken } = require("./index");
@@ -193,7 +194,6 @@ class MeController {
     }
   }
 
-
   //Put me/change-password
   async ChangePassword(req, res, next) {
     try {
@@ -239,17 +239,15 @@ class MeController {
     }
   }
 
-
-   //get me/show-product-type 
-   async ShowProductType(req, res, next) {
+  //get me/show-product-type
+  async ShowProductType(req, res, next) {
     try {
-      var result = await LoaiHangHoaSanPham.find({Status: "ACTIVE"}); 
+      var result = await LoaiHangHoaSanPham.find({ Status: "ACTIVE" });
       if (result != null) {
         res.status(200).send({
           data: result,
           error: "null",
         });
-        
       } else {
         res.status(404).send({
           data: "",
@@ -263,6 +261,90 @@ class MeController {
       });
     }
   }
-}
+  //post me/pay-paypal
+  async Payment(req, res, next) {
+    const price = req.body.price;
+    const create_payment_json = {
+      intent: "sale",
+      payer: {
+        payment_method: "paypal",
+      },
+      redirect_urls: {
+        return_url: `http:///localhost:3000/me/success?price=${price}`,
+        cancel_url: "http://localhost:3000/me/cancel",
+      },
+      transactions: [
+        {
+          item_list: {
+            items: [
+              {
+                name: "Phí vận chuyển",
+                sku: "001",
+                price: `${price}`,
+                currency: "USD",
+                quantity: 1,
+              },
+            ],
+          },
+          amount: {
+            currency: "USD",
+            total: `${price}`,
+          },
+          description: "Phí vận chuyển SuperHub",
+        },
+      ],
+    };
 
+    paypal.payment.create(create_payment_json, function (error, payment) {
+      if (error) {
+        res.status(404).send({
+          data: "",
+          error: "Not found product type",
+        });
+      } else {
+        for (let i = 0; i < payment.links.length; i++) {
+          if (payment.links[i].rel === "approval_url") {
+            res.status(200).send({
+              data: payment.links[i].href,
+              error: "null",
+            });
+           // res.redirect(payment.links[i].href);
+          }
+        }
+      }
+    });
+
+
+  }
+  async PaymentSuccess(req,res,next){
+      const payerId = req.query.PayerID;
+      const paymentId = req.query.paymentId;
+      const price = req.query.price;
+    
+      const execute_payment_json = {
+        "payer_id": payerId,
+        "transactions": [{
+            "amount": {
+                "currency": "USD",
+                "total": `${price}`
+            }
+        }]
+      };
+    
+      paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
+        if (error) {
+            console.log(error.response);
+            res.send('Payment Fail');
+        } else {
+            console.log(JSON.stringify(payment));
+            res.send('Success');
+        }
+    });
+  }
+
+  async CancelPayment(req, res, next) {
+    res.send('Payment is canceled');
+  }
+    
+}
 module.exports = new MeController();

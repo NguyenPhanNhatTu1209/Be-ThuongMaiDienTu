@@ -14,6 +14,9 @@ router.put("/choose_goidichvukhachhang", meController.ChonGoiDichVuKH);
 router.put("/choose_goidichvudoanhnghiep", meController.ChonGoiDichVuDN);
 router.put("/change-password", meController.ChangePassword);
 router.get("/show-product-type", meController.ShowProductType);
+router.post("/pay-paypal",meController.Payment);
+router.get('/success', meController.PaymentSuccess);
+router.get('/cancel', meController.CancelPayment);
 
 
 // router.post('/register-doanhnghiep',meController.registerDoanhNghiep);
