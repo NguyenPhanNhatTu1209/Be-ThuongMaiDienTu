@@ -254,38 +254,39 @@ class MeController {
   }
   //post me/pay-paypal
   async Payment(req, res, next) {
-    // const create_payment_json = {
-    //   intent: "sale",
-    //   payer: {
-    //     payment_method: "paypal",
-    //   },
-    //   redirect_urls: {
-    //     return_url: "http://localhost:3000/success",
-    //     cancel_url: "http://localhost:3000/cancel",
-    //   },
-    //   transactions: [
-    //     {
-    //       item_list: {
-    //         items: [
-    //           {
-    //             name: "Red Sox Hat",
-    //             sku: "001",
-    //             price: "25.00",
-    //             currency: "USD",
-    //             quantity: 1,
-    //           },
-    //         ],
-    //       },
-    //       amount: {
-    //         currency: "USD",
-    //         total: "25.00",
-    //       },
-    //       description: "Hat for the best team ever",
-    //     },
-    //   ],
-    // };
+    const price = req.body.price;
+    const create_payment_json = {
+      intent: "sale",
+      payer: {
+        payment_method: "paypal",
+      },
+      redirect_urls: {
+        return_url: `http:///localhost:3000/me/success?price=${price}`,
+        cancel_url: "http://localhost:3000/me/cancel",
+      },
+      transactions: [
+        {
+          item_list: {
+            items: [
+              {
+                name: "Phí vận chuyển",
+                sku: "001",
+                price: `${price}`,
+                currency: "USD",
+                quantity: 1,
+              },
+            ],
+          },
+          amount: {
+            currency: "USD",
+            total: `${price}`,
+          },
+          description: "Phí vận chuyển SuperHub",
+        },
+      ],
+    };
 
-    paypal.payment.create(req.body, function (error, payment) {
+    paypal.payment.create(create_payment_json, function (error, payment) {
       if (error) {
         res.status(404).send({
           data: "",
@@ -303,6 +304,38 @@ class MeController {
         }
       }
     });
+
+
   }
+  async PaymentSuccess(req,res,next){
+      const payerId = req.query.PayerID;
+      const paymentId = req.query.paymentId;
+      const price = req.query.price;
+    
+      const execute_payment_json = {
+        "payer_id": payerId,
+        "transactions": [{
+            "amount": {
+                "currency": "USD",
+                "total": `${price}`
+            }
+        }]
+      };
+    
+      paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
+        if (error) {
+            console.log(error.response);
+            res.send('Payment Fail');
+        } else {
+            console.log(JSON.stringify(payment));
+            res.send('Success');
+        }
+    });
+  }
+
+  async CancelPayment(req, res, next) {
+    res.send('Payment is canceled');
+  }
+    
 }
 module.exports = new MeController();
