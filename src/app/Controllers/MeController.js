@@ -41,7 +41,6 @@ class MeController {
         });
       }
     } catch (error) {
-      console.log(error);
       res.status(500).send({
         data: "",
         error: error,
@@ -201,7 +200,6 @@ class MeController {
       const passwordNew = req.body.PasswordNew;
       const confirmPassword = req.body.ConfirmPassword;
       const token = req.get("Authorization").replace("Bearer ", "");
-      console.log(token);
       const _id = await verifyToken(token);
       var result = await TaiKhoan.findOne({ _id });
       if (result != null) {
@@ -261,66 +259,13 @@ class MeController {
       });
     }
   }
-  //post me/pay-paypal
-  async Payment(req, res, next) {
-    const price = req.body.price;
-    const create_payment_json = {
-      intent: "sale",
-      payer: {
-        payment_method: "paypal",
-      },
-      redirect_urls: {
-        return_url: `http:///localhost:3000/me/success?price=${price}`,
-        cancel_url: "http://localhost:3000/me/cancel",
-      },
-      transactions: [
-        {
-          item_list: {
-            items: [
-              {
-                name: "Phí vận chuyển",
-                sku: "001",
-                price: `${price}`,
-                currency: "USD",
-                quantity: 1,
-              },
-            ],
-          },
-          amount: {
-            currency: "USD",
-            total: `${price}`,
-          },
-          description: "Phí vận chuyển SuperHub",
-        },
-      ],
-    };
-
-    paypal.payment.create(create_payment_json, function (error, payment) {
-      if (error) {
-        res.status(404).send({
-          data: "",
-          error: "Not found product type",
-        });
-      } else {
-        for (let i = 0; i < payment.links.length; i++) {
-          if (payment.links[i].rel === "approval_url") {
-            res.status(200).send({
-              data: payment.links[i].href,
-              error: "null",
-            });
-           // res.redirect(payment.links[i].href);
-          }
-        }
-      }
-    });
-
-
-  }
+  
   async PaymentSuccess(req,res,next){
       const payerId = req.query.PayerID;
       const paymentId = req.query.paymentId;
       const price = req.query.price;
-    
+      const idDonHang = req.query.idDonHang;
+      var update= {ThanhToan: "Đã Thanh Toán"}
       const execute_payment_json = {
         "payer_id": payerId,
         "transactions": [{
@@ -329,14 +274,19 @@ class MeController {
                 "total": `${price}`
             }
         }]
-      };
-    
-      paypal.payment.execute(paymentId, execute_payment_json, function (error, payment) {
+      };    
+      paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
         if (error) {
-            console.log(error.response);
             res.send('Payment Fail');
         } else {
-            console.log(JSON.stringify(payment));
+          var resultDonHang = await Order.findOneAndUpdate(
+            { _id: idDonHang},
+            update,
+            {
+              new: true,
+            }
+          ); 
+
             res.send('Success');
         }
     });

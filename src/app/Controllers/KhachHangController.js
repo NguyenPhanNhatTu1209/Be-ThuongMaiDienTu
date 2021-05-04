@@ -7,7 +7,7 @@ const Order = require("../Models/Order");
 const GoiVanChuyen = require("../Models/GoiVanChuyen");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
 
-const { verifyToken } = require("./index");
+const { verifyToken, Payment, FormatDollar } = require("./index");
 class KhachHangController {
   //get customers/show_goikhachhang
   async showGoiKH(req, res, next) {
@@ -24,7 +24,6 @@ class KhachHangController {
       });
     }
   }
-
   // Post me/create-donhang
   async TaoDonHang(req, res, next) {
     try {
@@ -82,80 +81,139 @@ class KhachHangController {
           var resultDoanhNghiep = await DoanhNghiep.findOne({
             _id: update.id_DoanhNghiep,
           });
-          if(update.KhoiLuong > resultKH._doc.KhoiLuongToiDa)
-          {
-            if(update.KhoiLuong > khoiLuongBatBuoc)
-            {
+          var ngayHetHanGoiKhachHang = resultKH._doc.NgayHetHan;
+          var ngayThucTai = Date.now();
+          var soLuongDonHangGoiKhachHang = resultKH._doc.SoDonHang;
+          var ngayHetHanGoiDoanhNghiep = resultDoanhNghiep._doc.NgayHetHan;
+          if (
+            update.KhoiLuong > resultKH._doc.KhoiLuongToiDa ||
+            ngayThucTai > ngayHetHanGoiKhachHang ||
+            soLuongDonHangGoiKhachHang == 0
+          ) {
+            if (update.KhoiLuong > khoiLuongBatBuoc) {
               res.status(400).send({
                 data: "",
                 error: "Gói vận chuyển này không thích hợp với số ký",
               });
-            }
-            else
-            {
-              giamGiaTaiKhoan= 0;
+            } else {
+              giamGiaTaiKhoan = 0;
               update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
               var tongGiamgia = update.GiamGia;
               var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
-              chiPhiVanChuyen = chiPhiVanChuyen-((chiPhiVanChuyen*tongGiamgia)/100);
-              update.TongChiPhi = String(chiPhiVanChuyen);
-              var soLuongDonHangDoanhNghiep = resultDoanhNghiep._doc.SoDonHang;
-              soLuongDonHangDoanhNghiep = soLuongDonHangDoanhNghiep - 1;
-              resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
-              await DoanhNghiep.findOneAndUpdate(
-                {_id:   update.id_DoanhNghiep},
-                resultDoanhNghiep._doc,
-                {
-                  new: true,
-                }
-              );
+              chiPhiVanChuyen =
+                chiPhiVanChuyen - (chiPhiVanChuyen * tongGiamgia) / 100;
+              var tienDo = chiPhiVanChuyen / 23050;
+              var formatDollar = FormatDollar(tienDo);
+              update.TongChiPhi = chiPhiVanChuyen.toString();
               var resultOrder = await Order.create(update);
-              res.status(200).send({
-                data: resultOrder,
-                error: "Gói khách hàng không được sử dụng",
+              var idDonHangMoiTao = resultOrder._doc._id;
+              var resultPayment;
+              Payment(formatDollar,idDonHangMoiTao,async function (error, payment) {
+                if (error) {
+                  resultPayment = error;
+                } else {
+                  for (let i = 0; i < payment.links.length; i++) {
+                    if (payment.links[i].rel === "approval_url") {
+                      resultPayment = payment.links[i].href;
+                      update.TongChiPhi = chiPhiVanChuyen.toString();
+                      var soLuongDonHangDoanhNghiep =
+                        resultDoanhNghiep._doc.SoDonHang;
+                      if (
+                        soLuongDonHangDoanhNghiep > 0 &&
+                        ngayThucTai <= ngayHetHanGoiDoanhNghiep
+                      ) {
+                        soLuongDonHangDoanhNghiep =
+                          soLuongDonHangDoanhNghiep - 1;
+                        resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
+                        await DoanhNghiep.findOneAndUpdate(
+                          { _id: update.id_DoanhNghiep },
+                          resultDoanhNghiep._doc,
+                          {
+                            new: true,
+                          }
+                        );
+                        res.status(200).send({
+                          data: resultPayment,
+                          error:
+                            "Gói khách hàng không được sử dụng vì không hợp lệ",
+                        });
+                      } else {
+                        res.status(200).send({
+                          data: "null",
+                          error:
+                            "Gói vận chuyển hết hiệu lực vui lòng chọn gói khác",
+                        });
+                      }
+                    }
+                  }
+                }
               });
             }
-          }
-          else
-          {
-            if(update.KhoiLuong > khoiLuongBatBuoc)
-            {
+          } else {
+            if (update.KhoiLuong > khoiLuongBatBuoc) {
               res.status(400).send({
                 data: "",
                 error: "Gói vận chuyển này không thích hợp với số ký",
               });
-            }
-            else
-            {
+            } else {
               update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
               var tongGiamgia = update.GiamGia;
               var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
-              chiPhiVanChuyen = chiPhiVanChuyen-((chiPhiVanChuyen*tongGiamgia)/100);
+              chiPhiVanChuyen =
+                chiPhiVanChuyen - (chiPhiVanChuyen * tongGiamgia) / 100;
+              var tienDo = chiPhiVanChuyen / 23050;
+              var formatDollar = FormatDollar(tienDo);
               update.TongChiPhi = String(chiPhiVanChuyen);
-              var soLuongDonHangDoanhNghiep = resultDoanhNghiep._doc.SoDonHang;
-              soLuongDonHangDoanhNghiep = soLuongDonHangDoanhNghiep - 1;
-              resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
-              await DoanhNghiep.findOneAndUpdate(
-                {_id:   update.id_DoanhNghiep},
-                resultDoanhNghiep._doc,
-                {
-                  new: true,
-                }
-              );
-              var soLuongDonHang = resultKH._doc.SoDonHang;
-              soLuongDonHang = soLuongDonHang-1;
-              resultKH._doc.SoDonHang = soLuongDonHang;
-              await KhachHang.findOneAndUpdate(
-                { id_account: _id },
-                resultKH._doc,
-                {
-                  new: true,
-                }
-              );
               var resultOrder = await Order.create(update);
-              res.status(200).send({
-                data: resultOrder,
-                error: "null",
+              var idDonHangMoiTao = resultOrder._doc._id;
+              var resultPayment;
+              Payment(formatDollar,idDonHangMoiTao, async function (error, payment) {
+                if (error) {
+                  resultPayment = error;
+                } else {
+                  for (let i = 0; i < payment.links.length; i++) {
+                    if (payment.links[i].rel === "approval_url") {
+                      resultPayment = payment.links[i].href;
+                      var soLuongDonHangDoanhNghiep =
+                        resultDoanhNghiep._doc.SoDonHang;
+                      if (
+                        soLuongDonHangDoanhNghiep > 0 &&
+                        ngayThucTai <= ngayHetHanGoiDoanhNghiep
+                      ) {
+                        soLuongDonHangDoanhNghiep =
+                          soLuongDonHangDoanhNghiep - 1;
+                        resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
+                        await DoanhNghiep.findOneAndUpdate(
+                          { _id: update.id_DoanhNghiep },
+                          resultDoanhNghiep._doc,
+                          {
+                            new: true,
+                          }
+                        );
+                        var soLuongDonHang = resultKH._doc.SoDonHang;
+                        soLuongDonHang = soLuongDonHang - 1;
+                        resultKH._doc.SoDonHang = soLuongDonHang;
+                        await KhachHang.findOneAndUpdate(
+                          { id_account: _id },
+                          resultKH._doc,
+                          {
+                            new: true,
+                          }
+                        );                     
+                        res.status(200).send({
+                          data: resultPayment,
+                          error: "null",
+                        });
+                      } else {
+                        res.status(200).send({
+                          data: "null",
+                          error:
+                            "Gói vận chuyển hết hiệu lực vui lòng chọn gói khác",
+                        });
+                      }
+                    }
+                  }
+                }
               });
             }
           }
@@ -222,6 +280,21 @@ class KhachHangController {
     if (result != null) {
       const roleDT = result.Role;
       if (roleDT == "KHACHHANG") {
+        var resultdonHang = await Order.findOne({ _id: idDonHangKhachHang });
+        var idCongTy = resultdonHang._doc.id_DoanhNghiep;
+        var idKhachHang = resultdonHang._doc.id_KhachHang;
+        var resultKhachHang = await KhachHang.findOne({ _id: idKhachHang });
+        var resultDoanhNghiep = await DoanhNghiep.findOne({ _id: idCongTy });
+        var soDonHangKH = resultKhachHang._doc.SoDonHang + 1;
+        var SoDonHangDN = resultDoanhNghiep._doc.SoDonHang + 1;
+        var updateKH = { SoDonHang: soDonHangKH };
+        var updateDN = { SoDonHang: SoDonHangDN };
+        await KhachHang.findOneAndUpdate({ _id: idKhachHang }, updateKH, {
+          new: true,
+        });
+        await DoanhNghiep.findOneAndUpdate({ _id: idCongTy }, updateDN, {
+          new: true,
+        });
         var resultOrder = await Order.findOneAndUpdate(
           { _id: idDonHangKhachHang },
           update,
