@@ -6,6 +6,7 @@ const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
 const DiaChi = require("../Models/DiaChi");
 const Order = require("../Models/Order");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
+const paypal = require("paypal-rest-sdk");
 const bcrypt = require("bcrypt");
 
 const { createToken, verifyToken } = require("./index");
@@ -184,7 +185,6 @@ class MeController {
     }
   }
 
-
   //Put me/change-password
   async ChangePassword(req, res, next) {
     try {
@@ -230,17 +230,15 @@ class MeController {
     }
   }
 
-
-   //get me/show-product-type 
-   async ShowProductType(req, res, next) {
+  //get me/show-product-type
+  async ShowProductType(req, res, next) {
     try {
-      var result = await LoaiHangHoaSanPham.find({Status: "ACTIVE"}); 
+      var result = await LoaiHangHoaSanPham.find({ Status: "ACTIVE" });
       if (result != null) {
         res.status(200).send({
           data: result,
           error: "null",
         });
-        
       } else {
         res.status(404).send({
           data: "",
@@ -254,6 +252,57 @@ class MeController {
       });
     }
   }
-}
+  //post me/pay-paypal
+  async Payment(req, res, next) {
+    // const create_payment_json = {
+    //   intent: "sale",
+    //   payer: {
+    //     payment_method: "paypal",
+    //   },
+    //   redirect_urls: {
+    //     return_url: "http://localhost:3000/success",
+    //     cancel_url: "http://localhost:3000/cancel",
+    //   },
+    //   transactions: [
+    //     {
+    //       item_list: {
+    //         items: [
+    //           {
+    //             name: "Red Sox Hat",
+    //             sku: "001",
+    //             price: "25.00",
+    //             currency: "USD",
+    //             quantity: 1,
+    //           },
+    //         ],
+    //       },
+    //       amount: {
+    //         currency: "USD",
+    //         total: "25.00",
+    //       },
+    //       description: "Hat for the best team ever",
+    //     },
+    //   ],
+    // };
 
+    paypal.payment.create(req.body, function (error, payment) {
+      if (error) {
+        res.status(404).send({
+          data: "",
+          error: "Not found product type",
+        });
+      } else {
+        for (let i = 0; i < payment.links.length; i++) {
+          if (payment.links[i].rel === "approval_url") {
+            res.status(200).send({
+              data: payment.links[i].href,
+              error: "null",
+            });
+           // res.redirect(payment.links[i].href);
+          }
+        }
+      }
+    });
+  }
+}
 module.exports = new MeController();
