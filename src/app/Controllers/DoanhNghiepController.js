@@ -2,8 +2,10 @@ const DoanhNghiep = require("../Models/DoanhNghiep");
 const GoiVanChuyen = require("../Models/GoiVanChuyen");
 const TaiKhoan = require("../Models/TaiKhoan");
 const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
-const { verifyToken } = require("../Controllers/index");
+const { verifyToken,paymentMethodPackage,FormatDollar } = require("../Controllers/index");
 const Order = require("../Models/Order");
+const DonHangDichVu = require("../Models/DonHangDichVu");
+
 const { get } = require("../../routes/enterprises");
 
 class DoanhNghiepController {
@@ -317,6 +319,83 @@ class DoanhNghiepController {
         });
       }
     }
+
+
+    // Post enterprises/create-bill-package
+  async CreateBillPackage(req, res, next) {
+    try {
+      var {
+        TenGoi,
+        ChiPhi,
+        ThanhToan,
+        id_GoiDichVu,
+        id_DoanhNghiep,
+        id_KhachHang,
+      } = req.body;
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var update = {
+        TenGoi,
+        ChiPhi,
+        ThanhToan,
+        id_GoiDichVu,
+        id_DoanhNghiep,
+        id_KhachHang,
+      };
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "DOANHNGHIEP") {
+          var resultGoiDichVu =  await GoiDoanhNghiep.findOne({_id: update.id_GoiDichVu,DeleteAt: "False"});
+          if(resultGoiDichVu != null)
+          {
+            update.TenGoi = resultGoiDichVu._doc.TenGoi;
+            update.ChiPhi = resultGoiDichVu._doc.ChiPhi;
+            var resultDN =  await DoanhNghiep.findOne({id_account: _id });
+            update.id_DoanhNghiep = resultDN._doc._id;
+            var chiPhi = parseFloat(update.ChiPhi);
+            var tienDo = chiPhi / 23050;
+            var formatDollar = FormatDollar(tienDo);
+            var resultBillPackage = await DonHangDichVu.create(update);
+            var idDonHangMoiTao = resultBillPackage._doc._id;
+            var resultPayment;
+            paymentMethodPackage(formatDollar,idDonHangMoiTao, async function (error, payment) {
+              if (error) {
+                resultPayment = error;
+              } else {
+                for (let i = 0; i < payment.links.length; i++) {
+                  if (payment.links[i].rel === "approval_url") {
+                    resultPayment = payment.links[i].href; 
+                    res.status(200).send({
+                      data: resultPayment,
+                      error: "null",
+                    });         
+                    }
+                  }
+                }
+            });
+          }
+          else{
+            res.status(404).send({
+              data: "",
+              error: "Not found Package!",
+            });
+          }
+          
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
+       }
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        error: error,
+      });
+    }
+  }
 
 }
 

@@ -4,10 +4,11 @@ const DoanhNghiep = require("../Models/DoanhNghiep");
 const GoiKhachHang = require("../Models/GoiKhachHang");
 const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
 const Order = require("../Models/Order");
+const DonHangDichVu = require("../Models/DonHangDichVu");
 const GoiVanChuyen = require("../Models/GoiVanChuyen");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
 
-const { verifyToken, Payment, FormatDollar } = require("./index");
+const { verifyToken, Payment, FormatDollar , paymentMethodPackage } = require("./index");
 class KhachHangController {
   //get customers/show_goikhachhang
   async showGoiKH(req, res, next) {
@@ -24,7 +25,7 @@ class KhachHangController {
       });
     }
   }
-  // Post me/create-donhang
+  // Post customers/create-donhang
   async TaoDonHang(req, res, next) {
     try {
       var {
@@ -316,6 +317,82 @@ class KhachHangController {
       res.status(404).send({
         data: "",
         error: "Not found user!",
+      });
+    }
+  }
+
+  // Post customers/create-bill-package
+  async CreateBillPackage(req, res, next) {
+    try {
+      var {
+        TenGoi,
+        ChiPhi,
+        ThanhToan,
+        id_GoiDichVu,
+        id_DoanhNghiep,
+        id_KhachHang,
+      } = req.body;
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var update = {
+        TenGoi,
+        ChiPhi,
+        ThanhToan,
+        id_GoiDichVu,
+        id_DoanhNghiep,
+        id_KhachHang,
+      };
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "KHACHHANG") {
+          var resultGoiDichVu =  await GoiKhachHang.findOne({_id: update.id_GoiDichVu});
+          if(resultGoiDichVu != null)
+          {
+            update.TenGoi = resultGoiDichVu._doc.TenDichVuKhachHang;
+            update.ChiPhi = resultGoiDichVu._doc.ChiPhi;
+            var resultKH =  await KhachHang.findOne({id_account: _id });
+            update.id_KhachHang = resultKH._doc._id;
+            var chiPhi = parseFloat(update.ChiPhi);
+            var tienDo = chiPhi / 23050;
+            var formatDollar = FormatDollar(tienDo);
+            var resultBillPackage = await DonHangDichVu.create(update);
+            var idDonHangMoiTao = resultBillPackage._doc._id;
+            var resultPayment;
+            paymentMethodPackage(formatDollar,idDonHangMoiTao, async function (error, payment) {
+              if (error) {
+                resultPayment = error;
+              } else {
+                for (let i = 0; i < payment.links.length; i++) {
+                  if (payment.links[i].rel === "approval_url") {
+                    resultPayment = payment.links[i].href; 
+                    res.status(200).send({
+                      data: resultPayment,
+                      error: "null",
+                    });         
+                    }
+                  }
+                }
+            });
+          }
+          else{
+            res.status(404).send({
+              data: "",
+              error: "Not found Package!",
+            });
+          }
+          
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
+       }
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        error: error,
       });
     }
   }
