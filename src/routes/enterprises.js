@@ -24,6 +24,8 @@ router.get("/show-goidoanhnghiep", doanhnghiepController.showGoiDN);
 router.get("/show-order-by-customers", doanhnghiepController.ShowOrderByCustomers);
 router.put("/update-delivering-order", doanhnghiepController.UpdateDeliveringOrder);
 router.put("/update-delivered-order", doanhnghiepController.UpdateDeliveredOrder);
+router.post("/create-bill-package", doanhnghiepController.CreateBillPackage);
+
 
 
 //router.get('/create', khachhangController.create);

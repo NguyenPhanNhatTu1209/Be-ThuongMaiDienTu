@@ -16,6 +16,9 @@ router.put("/change-password", meController.ChangePassword);
 router.get("/show-product-type", meController.ShowProductType);
 router.get('/success', meController.PaymentSuccess);
 router.get('/cancel', meController.CancelPayment);
+router.get('/successPackageBill', meController.PaymentSuccessBillPackage);
+router.get('/cancelPackageBill', meController.CancelPaymentBillPackage);
+
 
 
 // router.post('/register-doanhnghiep',meController.registerDoanhNghiep);

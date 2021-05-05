@@ -5,6 +5,7 @@ const GoiKhachHang = require("../Models/GoiKhachHang");
 const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
 const DiaChi = require("../Models/DiaChi");
 const Order = require("../Models/Order");
+const DonHangDichVu = require("../Models/DonHangDichVu");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
 const paypal = require("paypal-rest-sdk");
 const bcrypt = require("bcrypt");
@@ -291,7 +292,95 @@ class MeController {
         }
     });
   }
+  async PaymentSuccessBillPackage(req,res,next){
+    const payerId = req.query.PayerID;
+    const paymentId = req.query.paymentId;
+    const price = req.query.price;
+    const idDonHang = req.query.idDonHang;
+    var update= {ThanhToan: "Đã Thanh Toán"}
+    const execute_payment_json = {
+      "payer_id": payerId,
+      "transactions": [{
+          "amount": {
+              "currency": "USD",
+              "total": `${price}`
+          }
+      }]
+    };    
+    paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
+      if (error) {
+          res.send('Payment Fail');
+      } else {
+        var donHangDichVu = await DonHangDichVu.findOneAndUpdate(
+          { _id: idDonHang},
+          update,
+          {
+            new: true,
+          }
+        );
+        var resultDN = await DoanhNghiep.findOne({_id: donHangDichVu._doc.id_DoanhNghiep});
+        if(resultDN == null)
+        {
+          var resultGoiDV = await GoiKhachHang.findOne({
+            DeleteAt: "False",
+            _id: donHangDichVu._doc.id_GoiDichVu,
+          });
+          const {
+            TenDichVuKhachHang,
+            KhoiLuongToiDa,
+            SoDonHang,
+            GiamGia,
+          } = resultGoiDV;
+          var soNgay = resultGoiDV.HanSuDung;
+          // Create new Date instance
+          var date = new Date();
+          // Add a day
+          date.setDate(date.getDate() + soNgay);
+          const updateKH = {
+            TenDichVuKhachHang,
+            KhoiLuongToiDa,
+            NgayHetHan: date,
+            SoDonHang,
+            GiamGia,
+          };
+          await KhachHang.findOneAndUpdate(
+            { _id: donHangDichVu._doc.id_KhachHang },
+            updateKH,
+            {
+              new: true,
+            }
+          );
+          
+        }
+        else{
+            var resultGoiDV = await GoiDoanhNghiep.findOne({
+            DeleteAt: "False",
+            _id: donHangDichVu._doc.id_GoiDichVu,
+          });
+          const { TenGoi, SoDonHang } = resultGoiDV;
+          var soNgay = resultGoiDV.HanSuDung;
+          // Create new Date instance
+          var date = new Date();
+          // Add a day
+          date.setDate(date.getDate() + soNgay);
+          const updateDN = { TenGoi, NgayHetHan: date, SoDonHang };
+          await DoanhNghiep.findOneAndUpdate(
+            { _id: donHangDichVu._doc.id_DoanhNghiep },
+            updateDN,
+            {
+              new: true,
+            }
+          );
 
+        }
+
+          res.send('Success');
+      }
+  });
+}
+async CancelPaymentBillPackage(req, res, next) {
+  res.send('Payment is canceled');
+}
   async CancelPayment(req, res, next) {
     res.send('Payment is canceled');
   }
