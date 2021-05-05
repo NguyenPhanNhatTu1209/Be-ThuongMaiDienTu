@@ -21,6 +21,10 @@ router.get(
   doanhnghiepController.ShowShippingPackageByEnterprise
 );
 router.get("/show-goidoanhnghiep", doanhnghiepController.showGoiDN);
+router.get("/show-order-by-customers", doanhnghiepController.ShowOrderByCustomers);
+router.put("/update-delivering-order", doanhnghiepController.UpdateDeliveringOrder);
+router.put("/update-delivered-order", doanhnghiepController.UpdateDeliveredOrder);
+
 
 //router.get('/create', khachhangController.create);
 // router.post('/register',doanhnghiepController.register);

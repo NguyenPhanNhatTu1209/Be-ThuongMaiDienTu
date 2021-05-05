@@ -5,6 +5,7 @@ const { verifyToken } = require("./index");
 const DoanhNghiep = require("../Models/DoanhNghiep");
 const KhachHang = require("../Models/KhachHang");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
+const nodemailer = require("nodemailer");
 
 class AdminController {
   //Post admin/create-goikhachhang
@@ -295,16 +296,42 @@ class AdminController {
         if (roleDT == "ADMIN") {
           var check = await DoanhNghiep.findOne({ _id: idDoanhNghiep });
           if (check != null) {
-            var resultKH = await DoanhNghiep.findOneAndUpdate(
-              { _id: idDoanhNghiep },
-              updateValue,
-              {
-                new: true,
+            var EmailDN = check.Email;
+            var smtpTransport = nodemailer.createTransport({
+              host: "smtp.gmail.com",
+              port: 587,
+              auth: {
+                user: "nguyenphannhattu@gmail.com",
+                pass: "123456AsZx",
+              },
+            });
+            var mailOptions = {
+              to: EmailDN,
+              from: "nguyenphannhattu@gmail.com",
+              subject: "Enterprise Active",
+              text: 'Tài khoản doanh nghiệp của bạn đã được kích hoạt.',
+            };
+             smtpTransport.sendMail(mailOptions, async function (error, response) {
+              if (error) {
+                console.log(error);
+                res.status(400).send({
+                  data: "null",
+                  error: "Gửi không thành công",
+                });
+              } else {
+                var resultKH = await DoanhNghiep.findOneAndUpdate(
+                  { _id: idDoanhNghiep },
+                  updateValue,
+                  {
+                    new: true,
+                  }
+                );
+                res.status(200).send({
+                  Data: resultKH,
+                  Success: "Đã gửi Email thành công",
+                  error: "null",
+                });
               }
-            );
-            res.status(200).send({
-              data: resultKH,
-              error: "null",
             });
           } else {
             res.status(400).send({
