@@ -120,8 +120,8 @@ class TaiKhoanController {
     // const { Email, Password, TenDoanhNghiep, SoDienThoai, DiaChi, GiayPhep } = req.body;
     try {
       const EmailTK = req.body.EmailTK;
-      console.log(EmailTK);
       const result = await TaiKhoan.findOne({ Email: EmailTK });
+      console.log(result._doc);
       if (result != null) {
         const token = await createTokenTime(`${result._id}`);
         console.log(token);
