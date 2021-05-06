@@ -126,11 +126,15 @@ class TaiKhoanController {
         const token = await createTokenTime(`${result._id}`);
         console.log(token);
         var smtpTransport = nodemailer.createTransport({
-          host: "smtp.gmail.com",
-          port: 587,
+          service: "gmail", //smtp.gmail.com  //in place of service use host...
+          secure: false, //true
+          port: 25, //465
           auth: {
             user: "nguyenphannhattu@gmail.com",
-            pass: "123456AsZx",
+            pass: "15082000AsZx",
+          },
+          tls: {
+            rejectUnauthorized: false,
           },
         });
         var mailOptions = {
@@ -148,11 +152,10 @@ class TaiKhoanController {
             });
             console.log(error);
           } else {
-            console.log("Success  gửi email thành công");
+            console.log("Success gửi email thành công");
             res.status(200).send({
               Success: "Đã gửi Email thành công",
             });
-            
           }
         });
       } else {
