@@ -139,7 +139,9 @@ class TaiKhoanController {
           subject: "Password Reset",
           html: `Press <a href=http://${req.headers.host}/auth/reset-password/${token}> here </a> to change password.`,
         };
+        console.log(`http://${req.headers.host}/auth/reset-password/${token}`);
         smtpTransport.sendMail(mailOptions, function (error, response) {
+          console.log(error, response);
           if (error) {
             res.status(400).send({
               error: "Gửi không thành công",
