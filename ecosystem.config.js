@@ -2,8 +2,8 @@ module.exports = {
     apps: [
       {
         name: 'ec18b010',
-        script: 'dist/src/index.js',
-        args: 'src/index.js',
+        script: "dist/src/index.js",
+        args: "src/index.js",
         wait_ready: true,
         error_file: './logs/err.log',
         out_file: './logs/out.log',
