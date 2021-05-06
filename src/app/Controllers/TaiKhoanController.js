@@ -146,10 +146,11 @@ class TaiKhoanController {
             });
             console.log(error);
           } else {
+            console.log("Success  gửi email thành công");
             res.status(200).send({
               Success: "Đã gửi Email thành công",
             });
-            console.log("Success");
+            
           }
         });
       } else {
