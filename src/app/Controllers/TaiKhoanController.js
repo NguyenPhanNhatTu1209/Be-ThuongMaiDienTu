@@ -144,10 +144,12 @@ class TaiKhoanController {
             res.status(400).send({
               error: "Gửi không thành công",
             });
+            console.log(error);
           } else {
             res.status(200).send({
               Success: "Đã gửi Email thành công",
             });
+            console.log("Success");
           }
         });
       } else {
