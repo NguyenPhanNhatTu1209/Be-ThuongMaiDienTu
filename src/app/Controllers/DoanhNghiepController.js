@@ -359,21 +359,35 @@ class DoanhNghiepController {
             var resultBillPackage = await DonHangDichVu.create(update);
             var idDonHangMoiTao = resultBillPackage._doc._id;
             var resultPayment;
-            paymentMethodPackage(formatDollar,idDonHangMoiTao, async function (error, payment) {
-              if (error) {
-                resultPayment = error;
-              } else {
-                for (let i = 0; i < payment.links.length; i++) {
-                  if (payment.links[i].rel === "approval_url") {
-                    resultPayment = payment.links[i].href; 
-                    res.status(200).send({
-                      data: resultPayment,
-                      error: "null",
-                    });         
+            var ngayHienTai = new Date();
+            ngayHienTai.setDate(ngayHienTai.getDate());
+            var ngayHetHan = resultDN._doc.NgayHetHan;
+            var soDonHangHienTai = resultDN._doc.SoDonHang;
+            if(ngayHienTai<= ngayHetHan && soDonHangHienTai>0)
+            {
+              res.status(400).send({
+                data: "",
+                error: "Gói của bạn vẫn còn hiệu lực",
+              });
+            }
+            else
+            {
+              paymentMethodPackage(formatDollar,idDonHangMoiTao, async function (error, payment) {
+                if (error) {
+                  resultPayment = error;
+                } else {
+                  for (let i = 0; i < payment.links.length; i++) {
+                    if (payment.links[i].rel === "approval_url") {
+                      resultPayment = payment.links[i].href; 
+                      res.status(200).send({
+                        data: resultPayment,
+                        error: "null",
+                      });         
+                      }
                     }
                   }
-                }
-            });
+              });
+            }
           }
           else{
             res.status(404).send({

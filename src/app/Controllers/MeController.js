@@ -343,14 +343,14 @@ class MeController {
             SoDonHang,
             GiamGia,
           };
-          await KhachHang.findOneAndUpdate(
-            { _id: donHangDichVu._doc.id_KhachHang },
-            updateKH,
-            {
-              new: true,
-            }
-          );
-          
+          var resultKH = await KhachHang.findOne({_id: donHangDichVu._doc.id_KhachHang});
+            await KhachHang.findOneAndUpdate(
+              { _id: donHangDichVu._doc.id_KhachHang },
+              updateKH,
+              {
+                new: true,
+              }
+            );
         }
         else{
             var resultGoiDV = await GoiDoanhNghiep.findOne({
@@ -364,14 +364,13 @@ class MeController {
           // Add a day
           date.setDate(date.getDate() + soNgay);
           const updateDN = { TenGoi, NgayHetHan: date, SoDonHang };
-          await DoanhNghiep.findOneAndUpdate(
-            { _id: donHangDichVu._doc.id_DoanhNghiep },
-            updateDN,
-            {
-              new: true,
-            }
-          );
-
+            await DoanhNghiep.findOneAndUpdate(
+              { _id: donHangDichVu._doc.id_DoanhNghiep },
+              updateDN,
+              {
+                new: true,
+              }
+            );
         }
 
           res.send('Success');
@@ -381,7 +380,7 @@ class MeController {
 async CancelPaymentBillPackage(req, res, next) {
   res.send('Payment is canceled');
 }
-  async CancelPayment(req, res, next) {
+async CancelPayment(req, res, next) {
     res.send('Payment is canceled');
   }
     
