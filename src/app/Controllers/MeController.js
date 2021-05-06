@@ -288,7 +288,10 @@ class MeController {
             }
           ); 
 
-            res.send('Success');
+          res.send({
+            message: 'Success',
+            payment,
+          });
         }
     });
   }
@@ -373,7 +376,10 @@ class MeController {
             );
         }
 
-          res.send('Success');
+          res.send({
+            message: 'Success',
+            payment,
+          });
       }
   });
 }
