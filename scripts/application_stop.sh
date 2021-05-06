@@ -1,1 +1,1 @@
-sudo pm2 kill
+pkill node
