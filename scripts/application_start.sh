@@ -11,4 +11,4 @@ cd /home/ubuntu/file/ec-2021
 yarn
 
 # Run pm2
-yarn pm2
+node src/index.js > app.out.log 2> app.err.log < /dev/null &
