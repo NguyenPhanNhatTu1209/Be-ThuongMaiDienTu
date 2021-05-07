@@ -121,38 +121,33 @@ class TaiKhoanController {
     try {
       const EmailTK = req.body.EmailTK;
       const result = await TaiKhoan.findOne({ Email: EmailTK });
-      console.log(result._doc);
       if (result != null) {
         const token = await createTokenTime(`${result._id}`);
-        console.log(token);
         var smtpTransport = nodemailer.createTransport({
           service: "gmail", //smtp.gmail.com  //in place of service use host...
           secure: false, //true
           port: 25, //465
           auth: {
-            user: "nguyenphannhattu@gmail.com",
-            pass: "15082000AsZx",
+            user: process.env.EmailAdmin,
+            pass: process.env.PasswordAdmin,
           },
           tls: {
             rejectUnauthorized: false,
           },
         });
+        var url = `http://${req.headers.host}/auth/reset-password/${token}`;
         var mailOptions = {
           to: result.Email,
-          from: "nguyenphannhattu@gmail.com",
+          from: process.env.EmailAdmin,
           subject: "Password Reset",
-          html: `Press <a href=http://${req.headers.host}/auth/reset-password/${token}> here </a> to change password.`,
+          text:"Please follow this link to reset your password "+ url,
         };
-        console.log(`http://${req.headers.host}/auth/reset-password/${token}`);
         smtpTransport.sendMail(mailOptions, function (error, response) {
-          console.log(error, response);
           if (error) {
             res.status(400).send({
               error: "Gửi không thành công",
             });
-            console.log(error);
           } else {
-            console.log("Success gửi email thành công");
             res.status(200).send({
               Success: "Đã gửi Email thành công",
             });
@@ -164,6 +159,7 @@ class TaiKhoanController {
         });
       }
     } catch (error) {
+      console.log(error);
       res.status(400).send({
         error: error,
       });
