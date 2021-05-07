@@ -1,5 +1,6 @@
 var jwt = require("jsonwebtoken");
 const paypal = require("paypal-rest-sdk");
+const PaypalModel = require("../Models/Paypal");
 async function createToken(idUser) {
   const token = await jwt.sign(idUser, process.env.ACCESS_TOKEN);
   return token;
@@ -117,6 +118,24 @@ function paymentMethodPackage(price, idDonHang , next) {
   });
 }
 
+
+async function  RefundPayment(id_Order,next) {
+  const resultPaypal = await PaypalModel.findOne({id_Order});
+  const data = {
+    amount: {
+      total: `${resultPaypal.Transaction}`,
+      currency: "USD",
+    },
+  };
+
+  paypal.sale.refund(resultPaypal.id_Paypal, data, async function (error, refund) {
+    await next(error, refund);
+  });
+}
+
+
+
+
 module.exports = {
   createToken,
   verifyToken,
@@ -124,5 +143,6 @@ module.exports = {
   makePassword,
   Payment: paymentMethod,
   FormatDollar,
-  paymentMethodPackage
+  paymentMethodPackage,
+  RefundPayment,
 };
