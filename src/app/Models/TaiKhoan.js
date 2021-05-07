@@ -6,6 +6,7 @@ const TaiKhoan = new Schema(
     Email: { type: String, required: true },
     Password: { type: String, required: true },
     Role: { type: String, required: true },
+    Status: {type: String, default: "INACTIVE"},
   },
   {
     timestamps: true,
