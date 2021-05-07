@@ -7,8 +7,13 @@ const Order = require("../Models/Order");
 const DonHangDichVu = require("../Models/DonHangDichVu");
 const GoiVanChuyen = require("../Models/GoiVanChuyen");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
-
-const { verifyToken, Payment, FormatDollar , paymentMethodPackage } = require("./index");
+const {
+  verifyToken,
+  Payment,
+  FormatDollar,
+  paymentMethodPackage,
+  RefundPayment,
+} = require("./index");
 class KhachHangController {
   //get customers/show_goikhachhang
   async showGoiKH(req, res, next) {
@@ -109,46 +114,50 @@ class KhachHangController {
               var resultOrder = await Order.create(update);
               var idDonHangMoiTao = resultOrder._doc._id;
               var resultPayment;
-              Payment(formatDollar,idDonHangMoiTao,async function (error, payment) {
-                if (error) {
-                  resultPayment = error;
-                } else {
-                  for (let i = 0; i < payment.links.length; i++) {
-                    if (payment.links[i].rel === "approval_url") {
-                      resultPayment = payment.links[i].href;
-                      update.TongChiPhi = chiPhiVanChuyen.toString();
-                      var soLuongDonHangDoanhNghiep =
-                        resultDoanhNghiep._doc.SoDonHang;
-                      if (
-                        soLuongDonHangDoanhNghiep > 0 &&
-                        ngayThucTai <= ngayHetHanGoiDoanhNghiep
-                      ) {
-                        soLuongDonHangDoanhNghiep =
-                          soLuongDonHangDoanhNghiep - 1;
-                        resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
-                        await DoanhNghiep.findOneAndUpdate(
-                          { _id: update.id_DoanhNghiep },
-                          resultDoanhNghiep._doc,
-                          {
-                            new: true,
-                          }
-                        );
-                        res.status(200).send({
-                          data: resultPayment,
-                          error:
-                            "Gói khách hàng không được sử dụng vì không hợp lệ",
-                        });
-                      } else {
-                        res.status(200).send({
-                          data: "null",
-                          error:
-                            "Gói vận chuyển hết hiệu lực vui lòng chọn gói khác",
-                        });
+              Payment(
+                formatDollar,
+                idDonHangMoiTao,
+                async function (error, payment) {
+                  if (error) {
+                    resultPayment = error;
+                  } else {
+                    for (let i = 0; i < payment.links.length; i++) {
+                      if (payment.links[i].rel === "approval_url") {
+                        resultPayment = payment.links[i].href;
+                        update.TongChiPhi = chiPhiVanChuyen.toString();
+                        var soLuongDonHangDoanhNghiep =
+                          resultDoanhNghiep._doc.SoDonHang;
+                        if (
+                          soLuongDonHangDoanhNghiep > 0 &&
+                          ngayThucTai <= ngayHetHanGoiDoanhNghiep
+                        ) {
+                          soLuongDonHangDoanhNghiep =
+                            soLuongDonHangDoanhNghiep - 1;
+                          resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
+                          await DoanhNghiep.findOneAndUpdate(
+                            { _id: update.id_DoanhNghiep },
+                            resultDoanhNghiep._doc,
+                            {
+                              new: true,
+                            }
+                          );
+                          res.status(200).send({
+                            data: resultPayment,
+                            error:
+                              "Gói khách hàng không được sử dụng vì không hợp lệ",
+                          });
+                        } else {
+                          res.status(200).send({
+                            data: "null",
+                            error:
+                              "Gói vận chuyển hết hiệu lực vui lòng chọn gói khác",
+                          });
+                        }
                       }
                     }
                   }
                 }
-              });
+              );
             }
           } else {
             if (update.KhoiLuong > khoiLuongBatBuoc) {
@@ -168,54 +177,58 @@ class KhachHangController {
               var resultOrder = await Order.create(update);
               var idDonHangMoiTao = resultOrder._doc._id;
               var resultPayment;
-              Payment(formatDollar,idDonHangMoiTao, async function (error, payment) {
-                if (error) {
-                  resultPayment = error;
-                } else {
-                  for (let i = 0; i < payment.links.length; i++) {
-                    if (payment.links[i].rel === "approval_url") {
-                      resultPayment = payment.links[i].href;
-                      var soLuongDonHangDoanhNghiep =
-                        resultDoanhNghiep._doc.SoDonHang;
-                      if (
-                        soLuongDonHangDoanhNghiep > 0 &&
-                        ngayThucTai <= ngayHetHanGoiDoanhNghiep
-                      ) {
-                        soLuongDonHangDoanhNghiep =
-                          soLuongDonHangDoanhNghiep - 1;
-                        resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
-                        await DoanhNghiep.findOneAndUpdate(
-                          { _id: update.id_DoanhNghiep },
-                          resultDoanhNghiep._doc,
-                          {
-                            new: true,
-                          }
-                        );
-                        var soLuongDonHang = resultKH._doc.SoDonHang;
-                        soLuongDonHang = soLuongDonHang - 1;
-                        resultKH._doc.SoDonHang = soLuongDonHang;
-                        await KhachHang.findOneAndUpdate(
-                          { id_account: _id },
-                          resultKH._doc,
-                          {
-                            new: true,
-                          }
-                        );                     
-                        res.status(200).send({
-                          data: resultPayment,
-                          error: "null",
-                        });
-                      } else {
-                        res.status(200).send({
-                          data: "null",
-                          error:
-                            "Gói vận chuyển hết hiệu lực vui lòng chọn gói khác",
-                        });
+              Payment(
+                formatDollar,
+                idDonHangMoiTao,
+                async function (error, payment) {
+                  if (error) {
+                    resultPayment = error;
+                  } else {
+                    for (let i = 0; i < payment.links.length; i++) {
+                      if (payment.links[i].rel === "approval_url") {
+                        resultPayment = payment.links[i].href;
+                        var soLuongDonHangDoanhNghiep =
+                          resultDoanhNghiep._doc.SoDonHang;
+                        if (
+                          soLuongDonHangDoanhNghiep > 0 &&
+                          ngayThucTai <= ngayHetHanGoiDoanhNghiep
+                        ) {
+                          soLuongDonHangDoanhNghiep =
+                            soLuongDonHangDoanhNghiep - 1;
+                          resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
+                          await DoanhNghiep.findOneAndUpdate(
+                            { _id: update.id_DoanhNghiep },
+                            resultDoanhNghiep._doc,
+                            {
+                              new: true,
+                            }
+                          );
+                          var soLuongDonHang = resultKH._doc.SoDonHang;
+                          soLuongDonHang = soLuongDonHang - 1;
+                          resultKH._doc.SoDonHang = soLuongDonHang;
+                          await KhachHang.findOneAndUpdate(
+                            { id_account: _id },
+                            resultKH._doc,
+                            {
+                              new: true,
+                            }
+                          );
+                          res.status(200).send({
+                            data: resultPayment,
+                            error: "null",
+                          });
+                        } else {
+                          res.status(200).send({
+                            data: "null",
+                            error:
+                              "Gói vận chuyển hết hiệu lực vui lòng chọn gói khác",
+                          });
+                        }
                       }
                     }
                   }
                 }
-              });
+              );
             }
           }
         } else {
@@ -290,22 +303,35 @@ class KhachHangController {
         var SoDonHangDN = resultDoanhNghiep._doc.SoDonHang + 1;
         var updateKH = { SoDonHang: soDonHangKH };
         var updateDN = { SoDonHang: SoDonHangDN };
-        await KhachHang.findOneAndUpdate({ _id: idKhachHang }, updateKH, {
-          new: true,
-        });
-        await DoanhNghiep.findOneAndUpdate({ _id: idCongTy }, updateDN, {
-          new: true,
-        });
-        var resultOrder = await Order.findOneAndUpdate(
-          { _id: idDonHangKhachHang },
-          update,
-          {
-            new: true,
+        var id_Order = resultdonHang._id;
+        var resultRefund;
+        RefundPayment(id_Order, async function (error, refund) {
+          if (error) {
+            resultRefund = error;
+            res.status(400).send({
+              error: resultRefund,
+            });
+          } else {
+            resultRefund=refund;
+            await KhachHang.findOneAndUpdate({ _id: idKhachHang }, updateKH, {
+              new: true,
+            });
+            await DoanhNghiep.findOneAndUpdate({ _id: idCongTy }, updateDN, {
+              new: true,
+            });
+            var resultOrder = await Order.findOneAndUpdate(
+              { _id: idDonHangKhachHang },
+              update,
+              {
+                new: true,
+              }
+            );
+            res.status(200).send({
+              data: resultOrder,
+              refund: resultRefund,
+              error: "null",
+            });
           }
-        );
-        res.status(200).send({
-          data: resultOrder,
-          error: "null",
         });
       } else {
         res.status(404).send({
@@ -346,12 +372,13 @@ class KhachHangController {
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "KHACHHANG") {
-          var resultGoiDichVu =  await GoiKhachHang.findOne({_id: update.id_GoiDichVu});
-          if(resultGoiDichVu != null)
-          {
+          var resultGoiDichVu = await GoiKhachHang.findOne({
+            _id: update.id_GoiDichVu,
+          });
+          if (resultGoiDichVu != null) {
             update.TenGoi = resultGoiDichVu._doc.TenDichVuKhachHang;
             update.ChiPhi = resultGoiDichVu._doc.ChiPhi;
-            var resultKH =  await KhachHang.findOne({id_account: _id });
+            var resultKH = await KhachHang.findOne({ id_account: _id });
             update.id_KhachHang = resultKH._doc._id;
             var chiPhi = parseFloat(update.ChiPhi);
             var tienDo = chiPhi / 23050;
@@ -363,45 +390,44 @@ class KhachHangController {
             ngayHienTai.setDate(ngayHienTai.getDate());
             var ngayHetHan = resultKH._doc.NgayHetHan;
             var soDonHangHienTai = resultKH._doc.SoDonHang;
-            if(ngayHienTai<= ngayHetHan && soDonHangHienTai>0)
-            {
+            if (ngayHienTai <= ngayHetHan && soDonHangHienTai > 0) {
               res.status(400).send({
                 data: "",
                 error: "Gói của bạn vẫn còn hiệu lực",
               });
-            }
-            else
-            {
-              paymentMethodPackage(formatDollar,idDonHangMoiTao, async function (error, payment) {
-                if (error) {
-                  resultPayment = error;
-                } else {
-                  for (let i = 0; i < payment.links.length; i++) {
-                    if (payment.links[i].rel === "approval_url") {
-                      resultPayment = payment.links[i].href; 
-                      res.status(200).send({
-                        data: resultPayment,
-                        error: "null",
-                      });         
+            } else {
+              paymentMethodPackage(
+                formatDollar,
+                idDonHangMoiTao,
+                async function (error, payment) {
+                  if (error) {
+                    resultPayment = error;
+                  } else {
+                    for (let i = 0; i < payment.links.length; i++) {
+                      if (payment.links[i].rel === "approval_url") {
+                        resultPayment = payment.links[i].href;
+                        res.status(200).send({
+                          data: resultPayment,
+                          error: "null",
+                        });
                       }
                     }
                   }
-              });
+                }
+              );
             }
-          }
-          else{
+          } else {
             res.status(404).send({
               data: "",
               error: "Not found Package!",
             });
           }
-          
-      } else {
-        res.status(404).send({
-          data: "",
-          error: "Not found user!",
-        });
-       }
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "Not found user!",
+          });
+        }
       }
     } catch (error) {
       console.log(error);
