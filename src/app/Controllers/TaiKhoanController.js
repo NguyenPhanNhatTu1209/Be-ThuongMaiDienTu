@@ -57,8 +57,40 @@ class TaiKhoanController {
           DiaChi,
           id_account,
         });
-        console.log(customer);
-        res.status(200).send(customer);
+
+        const token = await createTokenTime(`${id_account}`);
+        var smtpTransport = nodemailer.createTransport({
+          service: "gmail", //smtp.gmail.com  //in place of service use host...
+          secure: false, //true
+          port: 25, //465
+          auth: {
+            user: process.env.EmailAdmin,
+            pass: process.env.PasswordAdmin,
+          },
+          tls: {
+            rejectUnauthorized: false,
+          },
+        });
+        var url = `http://${req.headers.host}/auth/verify-email/${token}`;
+        console.log(customer._doc.Email);
+        var mailOptions = {
+          to: customer._doc.Email,
+          from: process.env.EmailAdmin,
+          subject: "Verify Email",
+          text:"Please follow this link to verify Email "+ url,
+        };
+        smtpTransport.sendMail(mailOptions, function (error, response) {
+          if (error) {
+            res.status(400).send({
+              error: "Gửi không thành công",
+            });
+          } else {
+            res.status(200).send({
+              data: customer,
+              Success: "Đã gửi Email thành công",
+            });
+          }
+        });
       } else {
         res.status(400).send({
           error: "Dang ky that bai",
@@ -69,6 +101,32 @@ class TaiKhoanController {
       res.status(400).send({
         error: "Dang ky that bai",
       });
+    }
+  }
+
+  async verifyEmail(req, res, next){
+    try {
+      const token = req.params.token;
+      const data = await verifyToken(token);
+      const _id = data.data;
+      var result = await TaiKhoan.findOne({ _id });
+      if (result != null) {
+        var update = {Status:"ACTIVE"};
+        await TaiKhoan.findOneAndUpdate({ _id }, update, {
+          new: true,
+        });
+        res.status(200).send({
+          data: "Kích hoạt thành công",
+          error: "null"
+        });
+      } else {
+        res.status(400).send({
+          error: "No Email",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(400).send("Token hết hạn");
     }
   }
   //Post enterprises/register-doanhnghiep
