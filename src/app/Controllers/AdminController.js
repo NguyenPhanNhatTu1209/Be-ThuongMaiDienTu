@@ -1,3 +1,5 @@
+
+require("dotenv").config();
 const TaiKhoan = require("../Models/TaiKhoan");
 const GoiKhachHang = require("../Models/GoiKhachHang");
 const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
@@ -6,6 +8,7 @@ const DoanhNghiep = require("../Models/DoanhNghiep");
 const KhachHang = require("../Models/KhachHang");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
 const nodemailer = require("nodemailer");
+
 
 class AdminController {
   //Post admin/create-goikhachhang
@@ -298,16 +301,20 @@ class AdminController {
           if (check != null) {
             var EmailDN = check.Email;
             var smtpTransport = nodemailer.createTransport({
-              host: "smtp.gmail.com",
-              port: 587,
+              service: "gmail", //smtp.gmail.com  //in place of service use host...
+              secure: false, //true
+              port: 25, //465
               auth: {
-                user: "nguyenphannhattu@gmail.com",
-                pass: "123456AsZx",
+                user: process.env.EmailAdmin,
+                pass: process.env.PasswordAdmin,
+              },
+              tls: {
+                rejectUnauthorized: false,
               },
             });
             var mailOptions = {
               to: EmailDN,
-              from: "nguyenphannhattu@gmail.com",
+              from: process.env.EmailAdmin,
               subject: "Enterprise Active",
               text: 'Tài khoản doanh nghiệp của bạn đã được kích hoạt.',
             };
