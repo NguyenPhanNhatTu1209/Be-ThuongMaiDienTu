@@ -126,7 +126,7 @@ class TaiKhoanController {
       }
     } catch (error) {
       console.log(error);
-      res.status(400).send("Token hết hạn");
+      res.status(400).send("Token hết hạn!");
     }
   }
   //Post enterprises/register-doanhnghiep
