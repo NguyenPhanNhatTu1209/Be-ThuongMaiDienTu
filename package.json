@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build:prod": "babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-console.log.log --copy-files",
     "start": "nodemon --inspect src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rimraf dist/ && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-console.log.log --copy-files",
-    "start:prod": "npm run build && node dist/src/index.js",
+    "start:prod": "node dist/src/index.js",
     "dev": "nodemon --exec babel-node src/index.js",
     "pm2": "yarn build && yarn pm2:start",
     "pm2:start": "pm2 start ecosystem.config.js"
