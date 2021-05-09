@@ -19,7 +19,7 @@ class MeController {
     try {
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
-      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      var result = await TaiKhoan.findOne({ _id,Status:"ACTIVE" }); //muc dich la lay role
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "KHACHHANG") {
@@ -56,7 +56,7 @@ class MeController {
     var updateValue = { SoDienThoai, DiaChi };
     const token = req.get("Authorization").replace("Bearer ", "");
     const _id = await verifyToken(token);
-    var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+    var result = await TaiKhoan.findOne({ _id ,Status:"ACTIVE"}); //muc dich la lay role
     if (result != null) {
       const roleDT = result.Role;
       if (roleDT == "KHACHHANG") {
@@ -93,108 +93,6 @@ class MeController {
       });
     }
   }
-  // PUT me/choose_goidichvukhachhang
-  async ChonGoiDichVuKH(req, res, next) {
-    // const { TenDichVuKhachHang, KhoiLuongToiDa, HanSuDung,SoDonHang,GiamGia } = req.body;
-    var idGoiDichVuKhachHang = req.body.idGoiDV;
-    const token = req.get("Authorization").replace("Bearer ", "");
-    const _id = await verifyToken(token);
-    var resultKH = await TaiKhoan.findOne({ _id }); //muc dich la lay role
-    var resultGoiDV = await GoiKhachHang.findOne({
-      DeleteAt: "False",
-      _id: idGoiDichVuKhachHang,
-    });
-    const {
-      TenDichVuKhachHang,
-      KhoiLuongToiDa,
-      SoDonHang,
-      GiamGia,
-    } = resultGoiDV;
-    var soNgay = resultGoiDV.HanSuDung;
-    // Create new Date instance
-    var date = new Date();
-    // Add a day
-    date.setDate(date.getDate() + soNgay);
-    const update = {
-      TenDichVuKhachHang,
-      KhoiLuongToiDa,
-      NgayHetHan: date,
-      SoDonHang,
-      GiamGia,
-    };
-    if (resultKH != null) {
-      const roleDT = resultKH.Role;
-      if (roleDT == "KHACHHANG") {
-        var resultKH = await KhachHang.findOneAndUpdate(
-          { id_account: _id },
-          update,
-          {
-            new: true,
-          }
-        );
-        res.status(200).send({
-          data: resultKH,
-          error: "null",
-        });
-      } else {
-        res.status(404).send({
-          data: "",
-          error: "No Package",
-        });
-      }
-    } else {
-      res.status(404).send({
-        data: "",
-        error: "Not found user!",
-      });
-    }
-  }
-
-  // PUT me/choose_goidichvudoanhnghiep
-  async ChonGoiDichVuDN(req, res, next) {
-    // const { TenGoi, HanSuDung,SoDonHang } = req.body;
-    var idGoiDichVuDoanhNghiep = req.body.idGoiDN;
-    const token = req.get("Authorization").replace("Bearer ", "");
-    const _id = await verifyToken(token);
-    var resultDN = await TaiKhoan.findOne({ _id }); //muc dich la lay role
-    var resultGoiDV = await GoiDoanhNghiep.findOne({
-      DeleteAt: "False",
-      _id: idGoiDichVuDoanhNghiep,
-    });
-    const { TenGoi, SoDonHang } = resultGoiDV;
-    var soNgay = resultGoiDV.HanSuDung;
-    // Create new Date instance
-    var date = new Date();
-    // Add a day
-    date.setDate(date.getDate() + soNgay);
-    const update = { TenGoi, NgayHetHan: date, SoDonHang };
-    if (resultDN != null) {
-      const roleDT = resultDN.Role;
-      if (roleDT == "DOANHNGHIEP") {
-        var resultDN = await DoanhNghiep.findOneAndUpdate(
-          { id_account: _id },
-          update,
-          {
-            new: true,
-          }
-        );
-        res.status(200).send({
-          data: resultDN,
-          error: "null",
-        });
-      } else {
-        res.status(404).send({
-          data: "",
-          error: "No Package",
-        });
-      }
-    } else {
-      res.status(404).send({
-        data: "",
-        error: "Not found user!",
-      });
-    }
-  }
 
   //Put me/change-password
   async ChangePassword(req, res, next) {
@@ -204,7 +102,7 @@ class MeController {
       const confirmPassword = req.body.ConfirmPassword;
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
-      var result = await TaiKhoan.findOne({ _id });
+      var result = await TaiKhoan.findOne({ _id ,Status:"ACTIVE"});
       if (result != null) {
         const isEqualPassword = await bcrypt.compare(
           passwordOld,
@@ -215,10 +113,6 @@ class MeController {
             const hashPassword = await bcrypt.hash(passwordNew, 5);
             result.Password = hashPassword;
             result.save();
-            // var updateValue = { Password: hashPassword };
-            // await TaiKhoan.findOneAndUpdate({ _id }, updateValue, {
-            //   new: true,
-            // });
             res.status(200).send({
               Success: "Change Password Success",
             });

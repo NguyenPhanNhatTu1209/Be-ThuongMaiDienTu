@@ -9,7 +9,7 @@ const DonHangDichVu = require("../Models/DonHangDichVu");
 const { get } = require("../../routes/enterprises");
 
 class DoanhNghiepController {
-  //GET enterprises/show-goidoanhnghiep
+  //GET enterprises/show-goidoanhnghiep (show all package )
   async showGoiDN(req, res, next) {
     var result = await GoiDoanhNghiep.find({ DeleteAt: "False" });
     if (result != null) {
@@ -29,7 +29,7 @@ class DoanhNghiepController {
       var createData = req.body;
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
-      const userDb = await TaiKhoan.findOne({ _id });
+      const userDb = await TaiKhoan.findOne({ _id ,Status: "ACTIVE"});
       if (userDb.Role == "DOANHNGHIEP") {
         createData.IdCongTy = (
           await DoanhNghiep.findOne({ id_account: _id })
@@ -70,7 +70,7 @@ class DoanhNghiepController {
       const token = req.get("Authorization").replace("Bearer ", "");
       const idPackageOld = req.body.idPackageOld;
       const _id = await verifyToken(token);
-      const userDb = await TaiKhoan.findOne({ _id });
+      const userDb = await TaiKhoan.findOne({ _id ,Status:"ACTIVE"});
       if (userDb.Role == "DOANHNGHIEP") {
         createData.IdCongTy = (
           await DoanhNghiep.findOne({ id_account: _id })
@@ -122,7 +122,7 @@ class DoanhNghiepController {
       var { idPackage } = req.body;
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
-      const userDb = await TaiKhoan.findOne({ _id });
+      const userDb = await TaiKhoan.findOne({ _id ,Status:"ACTIVE"});
       if (userDb.Role == "DOANHNGHIEP") {
         const resultDoanhNghiep = await DoanhNghiep.findOne({id_account: _id});
         var trangThaiDoanhNghiep = resultDoanhNghiep._doc.TrangThai;
@@ -178,7 +178,7 @@ class DoanhNghiepController {
     try {
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
-      const IdCongTy = (await DoanhNghiep.findOne({ id_account: _id }))._id;
+      const IdCongTy = (await DoanhNghiep.findOne({ id_account: _id ,TrangThai:"ACTIVE"}))._id;
       if (IdCongTy != null) {
         const shippingPackage = await GoiVanChuyen.find({
           IdCongTy,
@@ -191,7 +191,7 @@ class DoanhNghiepController {
       } else {
         res.status(400).send({
           data: "",
-          error: "User is not DoanhNghiep Role",
+          error: "Not Enterprise",
         });
       }
     } catch (error) {
@@ -207,7 +207,7 @@ class DoanhNghiepController {
     try {
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
-      const IdCongTy = (await DoanhNghiep.findOne({ id_account: _id }))._id;
+      const IdCongTy = (await DoanhNghiep.findOne({ id_account: _id,TrangThai:"ACTIVE"}))._id;
       if (IdCongTy != null) {
         const donHang = await Order.find({
           id_DoanhNghiep: IdCongTy,
@@ -219,7 +219,7 @@ class DoanhNghiepController {
       } else {
         res.status(400).send({
           data: "",
-          error: "User is not DoanhNghiep Role",
+          error: "Enterprise not found",
         });
       }
     } catch (error) {
@@ -239,8 +239,8 @@ class DoanhNghiepController {
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
       var update = { TrangThai: "Đang Giao" };
-      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
-      const IdCongTy = (await DoanhNghiep.findOne({ id_account: _id }))._id;
+      var result = await TaiKhoan.findOne({ _id ,Status:"ACTIVE"}); //muc dich la lay role
+      const IdCongTy = (await DoanhNghiep.findOne({ id_account: _id ,TrangThai:"ACTIVE"}))._id;
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "DOANHNGHIEP") {
@@ -284,7 +284,7 @@ class DoanhNghiepController {
         const token = req.get("Authorization").replace("Bearer ", "");
         const _id = await verifyToken(token);
         var update = { TrangThai: "Đã Giao" };
-        var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+        var result = await TaiKhoan.findOne({ _id ,Status:"ACTIVE"}); //muc dich la lay role
         const IdCongTy = (await DoanhNghiep.findOne({ id_account: _id }))._id;
         if (result != null) {
           const roleDT = result.Role;
@@ -342,7 +342,7 @@ class DoanhNghiepController {
         id_DoanhNghiep,
         id_KhachHang,
       };
-      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      var result = await TaiKhoan.findOne({ _id,Status:"ACTIVE" }); //muc dich la lay role
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "DOANHNGHIEP") {

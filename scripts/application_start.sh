@@ -10,5 +10,8 @@ cd /home/ubuntu/file/ec-2021
 # Install yarn dependencies
 yarn
 
-# Run pm2
-node src/index.js > app.out.log 2> app.err.log < /dev/null &
+# Build docker image
+sudo docker build -t lambiengcode/ec-b010 .
+
+# Run docker container
+sudo docker run -d --name ec-b010 -p 8080:8080 --env-file .env lambiengcode/ec-b010:latest
