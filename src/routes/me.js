@@ -10,8 +10,6 @@ router.put("/edit-profile", meController.editProfile);
 router.post("/add-address", diachiController.ThemDiaChi);
 router.put("/edit-address", diachiController.SuaDiaChi);
 router.delete("/delete-address", diachiController.XoaDiaChi);
-router.put("/choose_goidichvukhachhang", meController.ChonGoiDichVuKH);
-router.put("/choose_goidichvudoanhnghiep", meController.ChonGoiDichVuDN);
 router.put("/change-password", meController.ChangePassword);
 router.get("/show-product-type", meController.ShowProductType);
 router.get('/success', meController.PaymentSuccess);

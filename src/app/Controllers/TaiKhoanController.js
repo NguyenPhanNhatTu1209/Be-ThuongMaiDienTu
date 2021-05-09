@@ -15,7 +15,7 @@ class TaiKhoanController {
   //Post auth/login
   async login(req, res, next) {
     const { Email, Password } = req.body;
-    var result = await TaiKhoan.findOne({ Email });
+    var result = await TaiKhoan.findOne({ Email, Status: "ACTIVE" });
     if (result != null) {
       const isEqualPassword = await bcrypt.compare(Password, result.Password);
       if (isEqualPassword) {
@@ -32,7 +32,7 @@ class TaiKhoanController {
       }
     } else {
       res.status(404).send({
-        error: "Email not found!",
+        error: "Email not found or Email Inactive",
       });
     }
   }
@@ -129,7 +129,7 @@ class TaiKhoanController {
       res.status(400).send("Token hết hạn!");
     }
   }
-  //Post enterprises/register-doanhnghiep
+  //Post auth/register-doanhnghiep
   async registerDoanhNghiep(req, res, next) {
     const {
       Email,
@@ -140,6 +140,7 @@ class TaiKhoanController {
       GiayPhep,
     } = req.body;
     const Role = "DOANHNGHIEP";
+
     try {
       const result = await TaiKhoan.findOne({ Email });
       if (result == null) {
@@ -150,7 +151,7 @@ class TaiKhoanController {
           Role,
         });
         const id_account = account._id;
-        const customer = await DoanhNghiep.create({
+        const doanhNghiep = await DoanhNghiep.create({
           TenDoanhNghiep,
           Email,
           SoDienThoai,
@@ -159,7 +160,38 @@ class TaiKhoanController {
           GiayPhep,
           TrangThai: "INACTIVE",
         });
-        res.status(200).send(customer);
+        const token = await createTokenTime(`${id_account}`);
+        var smtpTransport = nodemailer.createTransport({
+          service: "gmail", //smtp.gmail.com  //in place of service use host...
+          secure: false, //true
+          port: 25, //465
+          auth: {
+            user: process.env.EmailAdmin,
+            pass: process.env.PasswordAdmin,
+          },
+          tls: {
+            rejectUnauthorized: false,
+          },
+        });
+        var url = `http://${req.headers.host}/auth/verify-email/${token}`;
+        var mailOptions = {
+          to: doanhNghiep._doc.Email,
+          from: process.env.EmailAdmin,
+          subject: "Verify Email",
+          text:"Please follow this link to verify Email "+ url,
+        };
+        smtpTransport.sendMail(mailOptions, function (error, response) {
+          if (error) {
+            res.status(400).send({
+              error: "Gửi không thành công",
+            });
+          } else {
+            res.status(200).send({
+              data: doanhNghiep,
+              Success: "Đã gửi Email thành công",
+            });
+          }
+        });
       } else {
         res.status(400).send({
           error: "Dang ky that bai",
@@ -178,7 +210,7 @@ class TaiKhoanController {
     // const { Email, Password, TenDoanhNghiep, SoDienThoai, DiaChi, GiayPhep } = req.body;
     try {
       const EmailTK = req.body.EmailTK;
-      const result = await TaiKhoan.findOne({ Email: EmailTK });
+      const result = await TaiKhoan.findOne({ Email: EmailTK});
       if (result != null) {
         const token = await createTokenTime(`${result._id}`);
         var smtpTransport = nodemailer.createTransport({

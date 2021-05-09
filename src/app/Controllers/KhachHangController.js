@@ -67,7 +67,7 @@ class KhachHangController {
         id_DoanhNghiep,
         id_GoiShipping,
       };
-      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      var result = await TaiKhoan.findOne({ _id ,Status:"ACTIVE"}); //muc dich la lay role
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "KHACHHANG") {
@@ -255,7 +255,7 @@ class KhachHangController {
     const token = req.get("Authorization").replace("Bearer ", "");
     const _id = await verifyToken(token);
     var update = { TrangThai: "Đã Nhận Hàng" };
-    var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+    var result = await TaiKhoan.findOne({ _id,Status:"ACTIVE" }); //muc dich la lay role
     if (result != null) {
       const roleDT = result.Role;
       if (roleDT == "KHACHHANG") {
@@ -290,7 +290,7 @@ class KhachHangController {
     const token = req.get("Authorization").replace("Bearer ", "");
     const _id = await verifyToken(token);
     var update = { TrangThai: "Đã Hủy Đơn" };
-    var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+    var result = await TaiKhoan.findOne({ _id,Status:"ACTIVE" }); //muc dich la lay role
     if (result != null) {
       const roleDT = result.Role;
       if (roleDT == "KHACHHANG") {
@@ -368,7 +368,7 @@ class KhachHangController {
         id_DoanhNghiep,
         id_KhachHang,
       };
-      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      var result = await TaiKhoan.findOne({ _id,Status:"ACTIVE" }); //muc dich la lay role
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "KHACHHANG") {
