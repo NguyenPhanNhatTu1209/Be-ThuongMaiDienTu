@@ -1,15 +1,30 @@
 const express = require("express");
 const router = express.Router();
+var multer = require("multer");
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + "-" + Date.now() + ".jpg");
+  },
+});
+const upload = multer({ storage: storage });
 
 const taikhoanController = require("../app/Controllers/TaiKhoanController");
 
+var cpUpload = upload.fields([{ name: 'logo', maxCount: 1 }, { name: 'doc', maxCount: 1 }]);
 //router.get('/create', khachhangController.create);
 router.post("/register-khachhang", taikhoanController.registerKhachHang);
-router.post("/register-doanhnghiep", taikhoanController.registerDoanhNghiep);
+router.post(
+  "/register-doanhnghiep",
+  cpUpload,
+  taikhoanController.registerDoanhNghiep
+);
 router.post("/login", taikhoanController.login);
 router.post("/forgot-password", taikhoanController.QuenMatKhau);
 router.get("/reset-password/:token", taikhoanController.ResetPassword);
-router.get("/verify-email/:token",taikhoanController.verifyEmail);
+router.get("/verify-email/:token", taikhoanController.verifyEmail);
 
 // router.post('/handle-form-actions',courseController.handleFormActions);
 // router.get('/:id/edit',courseController.edit);

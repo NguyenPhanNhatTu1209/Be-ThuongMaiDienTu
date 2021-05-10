@@ -1,6 +1,9 @@
 var jwt = require("jsonwebtoken");
 const paypal = require("paypal-rest-sdk");
 const PaypalModel = require("../Models/Paypal");
+const bucket = require("../../config/firebase/firebase");
+const uuid = require('uuid-v4');
+const fs = require('fs');
 async function createToken(idUser) {
   const token = await jwt.sign(idUser, process.env.ACCESS_TOKEN);
   return token;
@@ -34,17 +37,17 @@ function makePassword(length) {
   }
   return result.join("");
 }
-function FormatDollar(tienDo){
+function FormatDollar(tienDo) {
   var tienDo2f = Math.round(tienDo * 100) / 100;
   var tienDo3f = Math.round(tienDo * 1000) / 1000;
-  return          tienDo % tienDo2f == 0
-                  ? tienDo2f
-                  : tienDo2f > tienDo3f
-                  ? tienDo2f
-                  : tienDo2f + 0.01;
+  return tienDo % tienDo2f == 0
+    ? tienDo2f
+    : tienDo2f > tienDo3f
+    ? tienDo2f
+    : tienDo2f + 0.01;
 }
 
-function paymentMethod(price, idDonHang , next) {
+function paymentMethod(price, idDonHang, next) {
   const create_payment_json = {
     intent: "sale",
     payer: {
@@ -80,9 +83,7 @@ function paymentMethod(price, idDonHang , next) {
   });
 }
 
-
-
-function paymentMethodPackage(price, idDonHang , next) {
+function paymentMethodPackage(price, idDonHang, next) {
   const create_payment_json = {
     intent: "sale",
     payer: {
@@ -118,9 +119,8 @@ function paymentMethodPackage(price, idDonHang , next) {
   });
 }
 
-
-async function  RefundPayment(id_Order,next) {
-  const resultPaypal = await PaypalModel.findOne({id_Order});
+async function RefundPayment(id_Order, next) {
+  const resultPaypal = await PaypalModel.findOne({ id_Order });
   const data = {
     amount: {
       total: `${resultPaypal.Transaction}`,
@@ -128,13 +128,43 @@ async function  RefundPayment(id_Order,next) {
     },
   };
 
-  paypal.sale.refund(resultPaypal.id_Paypal, data, async function (error, refund) {
-    await next(error, refund);
-  });
+  paypal.sale.refund(
+    resultPaypal.id_Paypal,
+    data,
+    async function (error, refund) {
+      await next(error, refund);
+    }
+  );
 }
 
+async function UploadImage(name, folder) {
+  const path = "./uploads/" + name;
+  const metadata = {
+    metadata: {
+      // This line is very important. It's to create a download token.
+      firebaseStorageDownloadTokens: uuid(),
+    },
+    contentType: "image/png",
+    cacheControl: "public, max-age=31536000",
+  };
 
+  const tasks = await bucket.upload(path, {
+    // Support for HTTP requests made with `Accept-Encoding: gzip`
+    gzip: true,
+    metadata: metadata,
+    destination: folder + name,
+  });
 
+  const urls = await tasks[0].getSignedUrl({
+    action: "read",
+    expires: "03-09-2491",
+  });
+
+  // Delete image
+  fs.unlinkSync(path);
+
+  return urls[0];
+}
 
 module.exports = {
   createToken,
@@ -145,4 +175,5 @@ module.exports = {
   FormatDollar,
   paymentMethodPackage,
   RefundPayment,
+  UploadImage,
 };
