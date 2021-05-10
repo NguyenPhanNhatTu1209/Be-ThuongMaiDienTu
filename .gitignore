@@ -107,3 +107,5 @@ dist
 
 # VSCODE config
 .vs
+
+serviceAccountKey.json
