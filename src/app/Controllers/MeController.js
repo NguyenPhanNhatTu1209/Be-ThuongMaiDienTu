@@ -11,6 +11,7 @@ const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
 const paypal = require("paypal-rest-sdk");
 const bcrypt = require("bcrypt");
 
+
 const { createToken, verifyToken } = require("./index");
 const Paypal = require("../Models/Paypal");
 class MeController {
@@ -19,7 +20,7 @@ class MeController {
     try {
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
-      var result = await TaiKhoan.findOne({ _id,Status:"ACTIVE" }); //muc dich la lay role
+      var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "KHACHHANG") {
@@ -56,7 +57,7 @@ class MeController {
     var updateValue = { SoDienThoai, DiaChi };
     const token = req.get("Authorization").replace("Bearer ", "");
     const _id = await verifyToken(token);
-    var result = await TaiKhoan.findOne({ _id ,Status:"ACTIVE"}); //muc dich la lay role
+    var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
     if (result != null) {
       const roleDT = result.Role;
       if (roleDT == "KHACHHANG") {
@@ -102,7 +103,7 @@ class MeController {
       const confirmPassword = req.body.ConfirmPassword;
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
-      var result = await TaiKhoan.findOne({ _id ,Status:"ACTIVE"});
+      var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" });
       if (result != null) {
         const isEqualPassword = await bcrypt.compare(
           passwordOld,
@@ -292,7 +293,7 @@ class MeController {
               }
             );
           }
-          
+
           res.send({
             message: "Success",
             payment,
@@ -309,8 +310,8 @@ class MeController {
   }
   //post me/refund
   async RefundPayment(req, res, next) {
-    const {id_Order} = req.body;
-    const resultPaypal = await PaypalModel.findOne({id_Order});
+    const { id_Order } = req.body;
+    const resultPaypal = await PaypalModel.findOne({ id_Order });
     const data = {
       amount: {
         total: `${resultPaypal.Transaction}`,
@@ -334,5 +335,6 @@ class MeController {
       }
     });
   }
+  
 }
 module.exports = new MeController();
