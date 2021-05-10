@@ -137,7 +137,7 @@ async function RefundPayment(id_Order, next) {
   );
 }
 
-async function UploadImage(name) {
+async function UploadImage(name, folder) {
   const path = "./uploads/" + name;
   const metadata = {
     metadata: {
@@ -152,6 +152,7 @@ async function UploadImage(name) {
     // Support for HTTP requests made with `Accept-Encoding: gzip`
     gzip: true,
     metadata: metadata,
+    destination: folder + name,
   });
 
   const urls = await tasks[0].getSignedUrl({

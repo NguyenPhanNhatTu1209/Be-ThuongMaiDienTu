@@ -141,8 +141,8 @@ class TaiKhoanController {
       const doc = req.files['doc'][0];
       const nameLogo = logo.filename;
       const nameDoc = doc.filename;
-      const urlLogo = await UploadImage(nameLogo);
-      const urlDoc = await UploadImage(nameDoc);
+      const urlLogo = await UploadImage(nameLogo, 'Logos/');
+      const urlDoc = await UploadImage(nameDoc, 'Docs/');
 
       console.log('url1', urlLogo);
       console.log('url2', urlDoc);
