@@ -1,18 +1,17 @@
 const express = require("express");
 const router = express.Router();
 var multer = require("multer");
+const path = require("path");
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/");
   },
   filename: function (req, file, cb) {
-    cb(null, file.fieldname + "-" + Date.now() + ".jpg");
+    cb(null, file.fieldname + "-" + Date.now() + path.extname(file.originalname));
   },
 });
 const upload = multer({ storage: storage });
-
 const taikhoanController = require("../app/Controllers/TaiKhoanController");
-
 var cpUpload = upload.fields([{ name: 'logo', maxCount: 1 }, { name: 'doc', maxCount: 1 }]);
 //router.get('/create', khachhangController.create);
 router.post("/register-khachhang", taikhoanController.registerKhachHang);

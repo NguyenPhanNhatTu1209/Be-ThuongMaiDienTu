@@ -4,7 +4,7 @@ const KhachHang = require("../Models/KhachHang");
 const DoanhNghiep = require("../Models/DoanhNghiep");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
-const { UploadImage } = require('./index');
+const { UploadImage } = require("./index");
 
 const {
   createToken,
@@ -135,74 +135,74 @@ class TaiKhoanController {
   //Post auth/register-doanhnghiep
   async registerDoanhNghiep(req, res, next) {
     try {
-      // const Role = "DOANHNGHIEP";
-      console.log(req.body.username);
-      const logo = req.files['logo'][0];
-      const doc = req.files['doc'][0];
+      const Role = "DOANHNGHIEP";
+      const logo = req.files["logo"][0];
+      const doc = req.files["doc"][0];
       const nameLogo = logo.filename;
       const nameDoc = doc.filename;
-      const urlLogo = await UploadImage(nameLogo, 'Logos/');
-      const urlDoc = await UploadImage(nameDoc, 'Docs/');
-
-      console.log('url1', urlLogo);
-      console.log('url2', urlDoc);
-
-      //     const result = await TaiKhoan.findOne({ Email });
-      //     if (result == null) {
-      //       const hashPassword = await bcrypt.hash(Password, 5);
-      //       const account = await TaiKhoan.create({
-      //         Email,
-      //         Password: hashPassword,
-      //         Role,
-      //       });
-      //       const id_account = account._id;
-      //       const doanhNghiep = await DoanhNghiep.create({
-      //         TenDoanhNghiep,
-      //         Email,
-      //         SoDienThoai,
-      //         DiaChi,
-      //         id_account,
-      //         GiayPhep,
-      //         TrangThai: "INACTIVE",
-      //       });
-
-      //       const token = await createTokenTime(`${id_account}`);
-      //       var smtpTransport = nodemailer.createTransport({
-      //         service: "gmail", //smtp.gmail.com  //in place of service use host...
-      //         secure: false, //true
-      //         port: 25, //465
-      //         auth: {
-      //           user: process.env.EmailAdmin,
-      //           pass: process.env.PasswordAdmin,
-      //         },
-      //         tls: {
-      //           rejectUnauthorized: false,
-      //         },
-      //       });
-      //       var url = `http://${req.headers.host}/auth/verify-email/${token}`;
-      //       var mailOptions = {
-      //         to: doanhNghiep._doc.Email,
-      //         from: process.env.EmailAdmin,
-      //         subject: "Verify Email",
-      //         text: "Please follow this link to verify Email " + url,
-      //       };
-      //       smtpTransport.sendMail(mailOptions, function (error, response) {
-      //         if (error) {
-      //           res.status(400).send({
-      //             error: "Gửi không thành công",
-      //           });
-      //         } else {
-      //           res.status(200).send({
-      //             data: doanhNghiep,
-      //             Success: "Đã gửi Email thành công",
-      //           });
-      //         }
-      //       });
-      //     } else {
-      //       res.status(400).send({
-      //         error: "Dang ky that bai",
-      //       });
-      //     }
+      const emailDN = req.body.Email;
+      const passwordDN = req.body.Password;
+      const tenDN = req.body.TenDoanhNghiep;
+      const sdtDN = req.body.SoDienThoai;
+      const diaChiDN = req.body.DiaChi;
+      const urlLogo = await UploadImage(nameLogo, "Logos/");
+      const urlDoc = await UploadImage(nameDoc, "Docs/");
+      const result = await TaiKhoan.findOne({ Email: emailDN });
+      if (result == null) {
+        const hashPassword = await bcrypt.hash(passwordDN, 5);
+        const account = await TaiKhoan.create({
+          Email: emailDN,
+          Password: hashPassword,
+          Role,
+        });
+        const id_account = account._id;
+        const doanhNghiep = await DoanhNghiep.create({
+          TenDoanhNghiep: tenDN,
+          Email: emailDN,
+          SoDienThoai: sdtDN,
+          DiaChi: diaChiDN,
+          id_account,
+          GiayPhep: urlDoc,
+          Logo: urlLogo,
+          TrangThai: "INACTIVE",
+        });
+        const token = await createTokenTime(`${id_account}`);
+        var smtpTransport = nodemailer.createTransport({
+          service: "gmail", //smtp.gmail.com  //in place of service use host...
+          secure: false, //true
+          port: 25, //465
+          auth: {
+            user: process.env.EmailAdmin,
+            pass: process.env.PasswordAdmin,
+          },
+          tls: {
+            rejectUnauthorized: false,
+          },
+        });
+        var url = `http://${req.headers.host}/auth/verify-email/${token}`;
+        var mailOptions = {
+          to: doanhNghiep._doc.Email,
+          from: process.env.EmailAdmin,
+          subject: "Verify Email",
+          text: "Please follow this link to verify Email " + url,
+        };
+        smtpTransport.sendMail(mailOptions, function (error, response) {
+          if (error) {
+            res.status(400).send({
+              error: "Gửi không thành công",
+            });
+          } else {
+            res.status(200).send({
+              data: doanhNghiep,
+              Success: "Đã gửi Email thành công",
+            });
+          }
+        });
+      } else {
+        res.status(400).send({
+          error: "Dang ky that bai",
+        });
+      }
     } catch (error) {
       console.log(error);
       res.status(400).send({

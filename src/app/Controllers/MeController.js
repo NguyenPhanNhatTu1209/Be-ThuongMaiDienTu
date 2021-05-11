@@ -10,10 +10,13 @@ const DonHangDichVu = require("../Models/DonHangDichVu");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
 const paypal = require("paypal-rest-sdk");
 const bcrypt = require("bcrypt");
+const { UploadImage } = require("./index");
 
 
 const { createToken, verifyToken } = require("./index");
 const Paypal = require("../Models/Paypal");
+const { fileURLToPath } = require("url");
+
 class MeController {
   //get me/information / get || post put delete
   async information(req, res, next) {
@@ -52,16 +55,67 @@ class MeController {
     }
   }
   //put me/edit-profile
-  async editProfile(req, res, next) {
-    const { Ten, SoDienThoai, DiaChi } = req.body;
-    var updateValue = { SoDienThoai, DiaChi };
-    const token = req.get("Authorization").replace("Bearer ", "");
-    const _id = await verifyToken(token);
-    var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
-    if (result != null) {
-      const roleDT = result.Role;
-      if (roleDT == "KHACHHANG") {
-        updateValue.TenKhachHang = Ten;
+  async editProfileDN(req, res, next) {
+    try{
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
+      if (result != null) {
+          const logo = req.files["logo"][0];
+          const doc = req.files["doc"][0];
+          const nameLogo = logo.filename;
+          const nameDoc = doc.filename;
+          const tenDN = req.body.TenDoanhNghiep;
+          const sdtDN = req.body.SoDienThoai;
+          const diaChiDN = req.body.DiaChi;
+          const urlLogo = await UploadImage(nameLogo, "Logos/");
+          const urlDoc = await UploadImage(nameDoc, "Docs/");
+          console.log(req.body);
+          updateValue.TenDoanhNghiep = Ten;
+          var updateValueDN = {
+            TenDoanhNghiep: tenDN,
+            SoDienThoai: sdtDN,
+            DiaChi: diaChiDN,
+            GiayPhep: urlDoc,
+            Logo: urlLogo,
+          }
+          console.log(updateValueDN);
+          var resultDN = await DoanhNghiep.findOneAndUpdate(
+            { id_account: _id },
+            updateValueDN,
+            {
+              new: true,
+            }
+          );
+          res.status(200).send({
+            data: resultDN,
+            error: "null",
+          });
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
+      }
+    }
+    catch (error)
+    {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
+    }
+    
+  }
+
+  async editProfileKH(req, res, next) {
+    try{
+      const {TenKhachHang, SoDienThoai } = req.body;
+      var updateValue = { TenKhachHang, SoDienThoai};
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
+      if (result != null) {
         var resultKH = await KhachHang.findOneAndUpdate(
           { id_account: _id },
           updateValue,
@@ -74,25 +128,19 @@ class MeController {
           error: "null",
         });
       } else {
-        updateValue.TenDoanhNghiep = Ten;
-        var resultDN = await DoanhNghiep.findOneAndUpdate(
-          { id_account: _id },
-          updateValue,
-          {
-            new: true,
-          }
-        );
-        res.status(200).send({
-          data: resultDN,
-          error: "null",
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
         });
       }
-    } else {
-      res.status(404).send({
-        data: "",
-        error: "Not found user!",
-      });
     }
+    catch (error)
+    {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
+    }  
   }
 
   //Put me/change-password
