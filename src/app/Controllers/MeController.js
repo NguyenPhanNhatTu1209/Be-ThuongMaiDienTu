@@ -70,8 +70,6 @@ class MeController {
           const diaChiDN = req.body.DiaChi;
           const urlLogo = await UploadImage(nameLogo, "Logos/");
           const urlDoc = await UploadImage(nameDoc, "Docs/");
-          console.log(req.body);
-          updateValue.TenDoanhNghiep = Ten;
           var updateValueDN = {
             TenDoanhNghiep: tenDN,
             SoDienThoai: sdtDN,
@@ -79,7 +77,6 @@ class MeController {
             GiayPhep: urlDoc,
             Logo: urlLogo,
           }
-          console.log(updateValueDN);
           var resultDN = await DoanhNghiep.findOneAndUpdate(
             { id_account: _id },
             updateValueDN,
@@ -100,6 +97,7 @@ class MeController {
     }
     catch (error)
     {
+      console.log(error);
       res.status(500).send({
         data: "",
         error: error,
