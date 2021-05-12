@@ -17,16 +17,26 @@ const {
 class KhachHangController {
   //get customers/show_goikhachhang
   async showGoiKH(req, res, next) {
-    var result = await GoiKhachHang.find({ DeleteAt: "False" });
-    if (result != null) {
-      res.status(200).send({
-        data: result,
-        error: "null",
-      });
-    } else {
-      res.status(404).send({
-        data: "",
-        error: "No package",
+    try
+    {
+      var result = await GoiKhachHang.find({ DeleteAt: "False" });
+      if (result != null) {
+        res.status(200).send({
+          data: result,
+          error: "null",
+        });
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "No package",
+        });
+      }
+    }
+    catch(error)
+    {
+      console.log(error);
+      res.status(500).send({
+        error: error,
       });
     }
   }
@@ -251,100 +261,118 @@ class KhachHangController {
   }
   // Put me/confirm-donhang
   async XacNhanDonHang(req, res, next) {
-    var idDonHangKhachHang = req.body.idDonHang;
-    const token = req.get("Authorization").replace("Bearer ", "");
-    const _id = await verifyToken(token);
-    var update = { TrangThai: "Đã Nhận Hàng" };
-    var result = await TaiKhoan.findOne({ _id,Status:"ACTIVE" }); //muc dich la lay role
-    if (result != null) {
-      const roleDT = result.Role;
-      if (roleDT == "KHACHHANG") {
-        var resultOrder = await Order.findOneAndUpdate(
-          { _id: idDonHangKhachHang },
-          update,
-          {
-            new: true,
-          }
-        );
-        res.status(200).send({
-          data: resultOrder,
-          error: "null",
-        });
+    try{
+      var idDonHangKhachHang = req.body.idDonHang;
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var update = { TrangThai: "Đã Nhận Hàng" };
+      var result = await TaiKhoan.findOne({ _id,Status:"ACTIVE" }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "KHACHHANG") {
+          var resultOrder = await Order.findOneAndUpdate(
+            { _id: idDonHangKhachHang },
+            update,
+            {
+              new: true,
+            }
+          );
+          res.status(200).send({
+            data: resultOrder,
+            error: "null",
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
       } else {
         res.status(404).send({
           data: "",
-          error: "No Authentication",
+          error: "Not found user!",
         });
       }
-    } else {
-      res.status(404).send({
-        data: "",
-        error: "Not found user!",
-      });
     }
+   catch(error)
+   {
+    res.status(500).send({
+      data: "",
+      error: error,
+    });
+   }
   }
 
   // Delete me/delete-donhang
   async HuyDonHang(req, res, next) {
-    var idDonHangKhachHang = req.body.idDonHang;
-    const token = req.get("Authorization").replace("Bearer ", "");
-    const _id = await verifyToken(token);
-    var update = { TrangThai: "Đã Hủy Đơn" };
-    var result = await TaiKhoan.findOne({ _id,Status:"ACTIVE" }); //muc dich la lay role
-    if (result != null) {
-      const roleDT = result.Role;
-      if (roleDT == "KHACHHANG") {
-        var resultdonHang = await Order.findOne({ _id: idDonHangKhachHang });
-        var idCongTy = resultdonHang._doc.id_DoanhNghiep;
-        var idKhachHang = resultdonHang._doc.id_KhachHang;
-        var resultKhachHang = await KhachHang.findOne({ _id: idKhachHang });
-        var resultDoanhNghiep = await DoanhNghiep.findOne({ _id: idCongTy });
-        var soDonHangKH = resultKhachHang._doc.SoDonHang + 1;
-        var SoDonHangDN = resultDoanhNghiep._doc.SoDonHang + 1;
-        var updateKH = { SoDonHang: soDonHangKH };
-        var updateDN = { SoDonHang: SoDonHangDN };
-        var id_Order = resultdonHang._id;
-        var resultRefund;
-        RefundPayment(id_Order, async function (error, refund) {
-          if (error) {
-            resultRefund = error;
-            res.status(400).send({
-              error: resultRefund,
-            });
-          } else {
-            resultRefund=refund;
-            await KhachHang.findOneAndUpdate({ _id: idKhachHang }, updateKH, {
-              new: true,
-            });
-            await DoanhNghiep.findOneAndUpdate({ _id: idCongTy }, updateDN, {
-              new: true,
-            });
-            var resultOrder = await Order.findOneAndUpdate(
-              { _id: idDonHangKhachHang },
-              update,
-              {
+    try{
+      var idDonHangKhachHang = req.body.idDonHang;
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var update = { TrangThai: "Đã Hủy Đơn" };
+      var result = await TaiKhoan.findOne({ _id,Status:"ACTIVE" }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "KHACHHANG") {
+          var resultdonHang = await Order.findOne({ _id: idDonHangKhachHang });
+          var idCongTy = resultdonHang._doc.id_DoanhNghiep;
+          var idKhachHang = resultdonHang._doc.id_KhachHang;
+          var resultKhachHang = await KhachHang.findOne({ _id: idKhachHang });
+          var resultDoanhNghiep = await DoanhNghiep.findOne({ _id: idCongTy });
+          var soDonHangKH = resultKhachHang._doc.SoDonHang + 1;
+          var SoDonHangDN = resultDoanhNghiep._doc.SoDonHang + 1;
+          var updateKH = { SoDonHang: soDonHangKH };
+          var updateDN = { SoDonHang: SoDonHangDN };
+          var id_Order = resultdonHang._id;
+          var resultRefund;
+          RefundPayment(id_Order, async function (error, refund) {
+            if (error) {
+              resultRefund = error;
+              res.status(400).send({
+                error: resultRefund,
+              });
+            } else {
+              resultRefund=refund;
+              await KhachHang.findOneAndUpdate({ _id: idKhachHang }, updateKH, {
                 new: true,
-              }
-            );
-            res.status(200).send({
-              data: resultOrder,
-              refund: resultRefund,
-              error: "null",
-            });
-          }
-        });
+              });
+              await DoanhNghiep.findOneAndUpdate({ _id: idCongTy }, updateDN, {
+                new: true,
+              });
+              var resultOrder = await Order.findOneAndUpdate(
+                { _id: idDonHangKhachHang },
+                update,
+                {
+                  new: true,
+                }
+              );
+              res.status(200).send({
+                data: resultOrder,
+                refund: resultRefund,
+                error: "null",
+              });
+            }
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
       } else {
         res.status(404).send({
           data: "",
-          error: "No Authentication",
+          error: "Not found user!",
         });
       }
-    } else {
-      res.status(404).send({
-        data: "",
-        error: "Not found user!",
-      });
     }
+   catch(error)
+   {
+    res.status(500).send({
+      data: "",
+      error: error,
+    });
+   }
   }
 
   // Post customers/create-bill-package

@@ -772,67 +772,68 @@ class DoanhNghiepController {
                 var soTienThang10=0;
                 var soTienThang11=0;
                 var soTienThang12=0;
-                var soThang = ngayHienTai.getMonth();
+                var soNam = ngayHienTai.getFullYear();
                 for(var i=0;i<thongKeDonHang.length;i++)
                 {
                   var chiPhi = parseFloat(thongKeDonHang[i]._doc.TongChiPhi);
                   var checkThang = thongKeDonHang[i]._doc.updatedAt.getMonth();
-                  if(checkThang==0)
+                  var checkNam = thongKeDonHang[i]._doc.updatedAt.getFullYear();
+                  if(checkThang==0 && checkNam==soNam)
                   {
                     soDonHangThang1 = soDonHangThang1+1;
                     soTienThang1 = soTienThang1+chiPhi;
                   }
-                  else if(checkThang==1)
+                  else if(checkThang==1 && checkNam==soNam)
                   {
                     soDonHangThang2 = soDonHangThang2+1;
                     soTienThang2 = soTienThang2+chiPhi;
                   }
-                  else if(checkThang==2)
+                  else if(checkThang==2 && checkNam==soNam)
                   {
                     soDonHangThang3 = soDonHangThang3+1;
                     soTienThang3 = soTienThang3+chiPhi;
                   }
-                  else if(checkThang==3)
+                  else if(checkThang==3 && checkNam==soNam)
                   {
                     soDonHangThang4 = soDonHangThang4+1;
                     soTienThang4 = soTienThang4+chiPhi;
                   }
-                  else if(checkThang==4)
+                  else if(checkThang==4 && checkNam==soNam)
                   {
                     soDonHangThang5 = soDonHangThang5+1;
                     soTienThang5 = soTienThang5+chiPhi;
                   }
-                  else if(checkThang==5)
+                  else if(checkThang==5 && checkNam==soNam)
                   {
                     soDonHangThang6 = soDonHangThang6+1;
                     soTienThang6 = soTienThang6+chiPhi;
                   }
-                  else if(checkThang==6)
+                  else if(checkThang==6 && checkNam==soNam)
                   {
                     soDonHangThang7 = soDonHangThang7+1;
                     soTienThang7 = soTienThang7+chiPhi;
                   }
-                  else if(checkThang==7)
+                  else if(checkThang==7 && checkNam==soNam)
                   {
                     soDonHangThang8 = soDonHangThang8+1;
                     soTienThang8 = soTienThang8+chiPhi;
                   }
-                  else if(checkThang==8)
+                  else if(checkThang==8 && checkNam==soNam)
                   {
                     soDonHangThang9 = soDonHangThang9+1;
                     soTienThang9 = soTienThang9+chiPhi;
                   }
-                  else if(checkThang==9)
+                  else if(checkThang==9 && checkNam==soNam)
                   {
                     soDonHangThang10 = soDonHangThang10+1;
                     soTienThang10 = soTienThang10+chiPhi;
                   }
-                  else if(checkThang==10)
+                  else if(checkThang==10 && checkNam==soNam)
                   {
                     soDonHangThang11 = soDonHangThang11+1;
                     soTienThang11 = soTienThang11+chiPhi;
                   }
-                  else if(checkThang==11)
+                  else if(checkThang==11 && checkNam==soNam)
                   {
                     soDonHangThang12 = soDonHangThang12+1;
                     soTienThang12 = soTienThang12+chiPhi;

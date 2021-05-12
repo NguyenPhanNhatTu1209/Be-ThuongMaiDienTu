@@ -17,33 +17,42 @@ const { fileURLToPath } = require("url");
 class TaiKhoanController {
   //Post auth/login
   async login(req, res, next) {
-    const { Email, Password } = req.body;
-    var result = await TaiKhoan.findOne({ Email, Status: "ACTIVE" });
-    if (result != null) {
-      const isEqualPassword = await bcrypt.compare(Password, result.Password);
-      if (isEqualPassword) {
-        const token = await createToken(`${result._id}`);
-        result._doc.token = token;
-        res.status(200).send({
-          data: result,
-          error: "null",
-        });
+    try{
+      const { Email, Password } = req.body;
+      var result = await TaiKhoan.findOne({ Email, Status: "ACTIVE" });
+      if (result != null) {
+        const isEqualPassword = await bcrypt.compare(Password, result.Password);
+        if (isEqualPassword) {
+          const token = await createToken(`${result._id}`);
+          result._doc.token = token;
+          res.status(200).send({
+            data: result,
+            error: "null",
+          });
+        } else {
+          res.status(400).send({
+            error: "Wrong password!",
+          });
+        }
       } else {
-        res.status(400).send({
-          error: "Wrong password!",
+        res.status(404).send({
+          error: "Email not found or Email Inactive",
         });
       }
-    } else {
-      res.status(404).send({
-        error: "Email not found or Email Inactive",
+    }
+    catch(error)
+    {
+      res.status(500).send({
+        data: "",
+        error: error,
       });
     }
   }
   //Post customers/register-khachhang
   async registerKhachHang(req, res, next) {
-    const { Email, Password, TenKhachHang, SoDienThoai, DiaChi } = req.body;
-    const Role = "KHACHHANG";
     try {
+      const { Email, Password, TenKhachHang, SoDienThoai, DiaChi } = req.body;
+      const Role = "KHACHHANG";
       const result = await TaiKhoan.findOne({ Email });
       if (result == null) {
         const hashPassword = await bcrypt.hash(Password, 5);
@@ -106,7 +115,7 @@ class TaiKhoanController {
       });
     }
   }
-
+  //put customers/verify-Email
   async verifyEmail(req, res, next) {
     try {
       const token = req.params.token;
@@ -200,13 +209,13 @@ class TaiKhoanController {
         });
       } else {
         res.status(400).send({
-          error: "Dang ky that bai",
+          error: "Email đã tồn tại",
         });
       }
     } catch (error) {
       console.log(error);
-      res.status(400).send({
-        error: "Dang ky that bai",
+      res.status(500).send({
+        error: "Đăng ký thất bại",
       });
     }
   }
@@ -255,8 +264,7 @@ class TaiKhoanController {
         });
       }
     } catch (error) {
-      console.log(error);
-      res.status(400).send({
+      res.status(500).send({
         error: error,
       });
     }
@@ -284,7 +292,6 @@ class TaiKhoanController {
         });
       }
     } catch (error) {
-      console.log(error);
       res.status(400).send("Token hết hạn");
     }
   }
