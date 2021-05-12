@@ -253,100 +253,109 @@ class MeController {
   }
   //get me/successPackageBill
   async PaymentSuccessBillPackage(req, res, next) {
-    const payerId = req.query.PayerID;
-    const paymentId = req.query.paymentId;
-    const price = req.query.price;
-    const idDonHang = req.query.idDonHang;
-    var update = { ThanhToan: "Đã Thanh Toán" };
-    const execute_payment_json = {
-      payer_id: payerId,
-      transactions: [
-        {
-          amount: {
-            currency: "USD",
-            total: `${price}`,
+    try{
+      const payerId = req.query.PayerID;
+      const paymentId = req.query.paymentId;
+      const price = req.query.price;
+      const idDonHang = req.query.idDonHang;
+      var update = { ThanhToan: "Đã Thanh Toán" };
+      const execute_payment_json = {
+        payer_id: payerId,
+        transactions: [
+          {
+            amount: {
+              currency: "USD",
+              total: `${price}`,
+            },
           },
-        },
-      ],
-    };
-    paypal.payment.execute(
-      paymentId,
-      execute_payment_json,
-      async function (error, payment) {
-        if (error) {
-          res.send("Payment Fail");
-        } else {
-          var donHangDichVu = await DonHangDichVu.findOneAndUpdate(
-            { _id: idDonHang },
-            update,
-            {
-              new: true,
-            }
-          );
-          var resultDN = await DoanhNghiep.findOne({
-            _id: donHangDichVu._doc.id_DoanhNghiep,
-          });
-          if (resultDN == null) {
-            var resultGoiDV = await GoiKhachHang.findOne({
-              DeleteAt: "False",
-              _id: donHangDichVu._doc.id_GoiDichVu,
-            });
-            const {
-              TenDichVuKhachHang,
-              KhoiLuongToiDa,
-              SoDonHang,
-              GiamGia,
-            } = resultGoiDV;
-            var soNgay = resultGoiDV.HanSuDung;
-            // Create new Date instance
-            var date = new Date();
-            // Add a day
-            date.setDate(date.getDate() + soNgay);
-            const updateKH = {
-              TenDichVuKhachHang,
-              KhoiLuongToiDa,
-              NgayHetHan: date,
-              SoDonHang,
-              GiamGia,
-            };
-            var resultKH = await KhachHang.findOne({
-              _id: donHangDichVu._doc.id_KhachHang,
-            });
-            await KhachHang.findOneAndUpdate(
-              { _id: donHangDichVu._doc.id_KhachHang },
-              updateKH,
-              {
-                new: true,
-              }
-            );
+        ],
+      };
+      paypal.payment.execute(
+        paymentId,
+        execute_payment_json,
+        async function (error, payment) {
+          if (error) {
+            res.send("Payment Fail");
           } else {
-            var resultGoiDV = await GoiDoanhNghiep.findOne({
-              DeleteAt: "False",
-              _id: donHangDichVu._doc.id_GoiDichVu,
-            });
-            const { TenGoi, SoDonHang } = resultGoiDV;
-            var soNgay = resultGoiDV.HanSuDung;
-            // Create new Date instance
-            var date = new Date();
-            // Add a day
-            date.setDate(date.getDate() + soNgay);
-            const updateDN = { TenGoi, NgayHetHan: date, SoDonHang };
-            await DoanhNghiep.findOneAndUpdate(
-              { _id: donHangDichVu._doc.id_DoanhNghiep },
-              updateDN,
+            var donHangDichVu = await DonHangDichVu.findOneAndUpdate(
+              { _id: idDonHang },
+              update,
               {
                 new: true,
               }
             );
+            var resultDN = await DoanhNghiep.findOne({
+              _id: donHangDichVu._doc.id_DoanhNghiep,
+            });
+            if (resultDN == null) {
+              var resultGoiDV = await GoiKhachHang.findOne({
+                DeleteAt: "False",
+                _id: donHangDichVu._doc.id_GoiDichVu,
+              });
+              const {
+                TenDichVuKhachHang,
+                KhoiLuongToiDa,
+                SoDonHang,
+                GiamGia,
+              } = resultGoiDV;
+              var soNgay = resultGoiDV.HanSuDung;
+              // Create new Date instance
+              var date = new Date();
+              // Add a day
+              date.setDate(date.getDate() + soNgay);
+              const updateKH = {
+                TenDichVuKhachHang,
+                KhoiLuongToiDa,
+                NgayHetHan: date,
+                SoDonHang,
+                GiamGia,
+              };
+              var resultKH = await KhachHang.findOne({
+                _id: donHangDichVu._doc.id_KhachHang,
+              });
+              await KhachHang.findOneAndUpdate(
+                { _id: donHangDichVu._doc.id_KhachHang },
+                updateKH,
+                {
+                  new: true,
+                }
+              );
+            } else {
+              var resultGoiDV = await GoiDoanhNghiep.findOne({
+                DeleteAt: "False",
+                _id: donHangDichVu._doc.id_GoiDichVu,
+              });
+              const { TenGoi, SoDonHang } = resultGoiDV;
+              var soNgay = resultGoiDV.HanSuDung;
+              // Create new Date instance
+              var date = new Date();
+              // Add a day
+              date.setDate(date.getDate() + soNgay);
+              const updateDN = { TenGoi, NgayHetHan: date, SoDonHang };
+              await DoanhNghiep.findOneAndUpdate(
+                { _id: donHangDichVu._doc.id_DoanhNghiep },
+                updateDN,
+                {
+                  new: true,
+                }
+              );
+            }
+  
+            res.send({
+              message: "Success",
+              payment,
+            });
           }
-
-          res.send({
-            message: "Success",
-            payment,
-          });
         }
-      }
-    );
+      );
+    }
+    catch(error)
+    {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
+    }
   }
   async CancelPaymentBillPackage(req, res, next) {
     res.send("Payment is canceled");
@@ -356,30 +365,39 @@ class MeController {
   }
   //post me/refund
   async RefundPayment(req, res, next) {
-    const { id_Order } = req.body;
-    const resultPaypal = await PaypalModel.findOne({ id_Order });
-    const data = {
-      amount: {
-        total: `${resultPaypal.Transaction}`,
-        currency: "USD",
-      },
-    };
-
-    paypal.sale.refund(resultPaypal.id_Paypal, data, function (error, refund) {
-      if (error) {
-        res.status(400).send({
-          msg: "Refund fail!",
-          data: "",
-          error: error,
-        });
-      } else {
-        res.status(200).send({
-          msg: "Refund success!",
-          data: refund,
-          error: "",
-        });
-      }
-    });
+    try{
+      const { id_Order } = req.body;
+      const resultPaypal = await PaypalModel.findOne({ id_Order });
+      const data = {
+        amount: {
+          total: `${resultPaypal.Transaction}`,
+          currency: "USD",
+        },
+      };
+  
+      paypal.sale.refund(resultPaypal.id_Paypal, data, function (error, refund) {
+        if (error) {
+          res.status(400).send({
+            msg: "Refund fail!",
+            data: "",
+            error: error,
+          });
+        } else {
+          res.status(200).send({
+            msg: "Refund success!",
+            data: refund,
+            error: "",
+          });
+        }
+      });
+    }
+    catch(error)
+    {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
+    }
   }
   
 }
