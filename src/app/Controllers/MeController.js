@@ -32,13 +32,11 @@ class MeController {
           resultKH._doc.address = resultAddress; // them vao bien resultKH 1 key la address va` gia' tri la bien resultAddress vua tim dc o dong tren
           res.status(200).send({
             data: resultKH,
-            error: "null",
           });
         } else {
           var resultDN = await DoanhNghiep.findOne({ id_account: _id });
           res.status(200).send({
             data: resultDN,
-            error: "null",
           });
         }
       } else {
@@ -188,7 +186,6 @@ class MeController {
       if (result != null) {
         res.status(200).send({
           data: result,
-          error: "null",
         });
       } else {
         res.status(404).send({

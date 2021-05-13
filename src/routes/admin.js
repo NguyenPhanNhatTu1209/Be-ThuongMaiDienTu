@@ -13,6 +13,7 @@ router.delete("/deleted-goidoanhnghiep", adminController.deleteGoiDN);
 router.put("/confirm-doanhnghiep", adminController.DuyetDoanhNghiep);
 router.get("/show-customers", adminController.ShowCustomers);
 router.put("/editprofile-customer", adminController.EditProfileCustomer);
+router.get("/show-enterprises", adminController.ShowEnterprises);
 router.put("/editprofile-enterprise", adminController.EditProfileEnterprise);
 router.post("/create-product-type", adminController.CreateProductType);
 router.put("/update-product-type", adminController.UpdateProductType);

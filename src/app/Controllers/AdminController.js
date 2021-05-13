@@ -474,7 +474,6 @@ class AdminController {
           var resultDN = await DoanhNghiep.find({});
           res.status(200).send({
             data: resultDN,
-            error: "null",
           });
         } else {
           res.status(404).send({
