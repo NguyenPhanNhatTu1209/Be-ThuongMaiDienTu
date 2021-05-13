@@ -398,7 +398,6 @@ class AdminController {
           var resultKH = await KhachHang.find({});
           res.status(200).send({
             data: resultKH,
-            error: "null",
           });
         } else {
           res.status(404).send({
