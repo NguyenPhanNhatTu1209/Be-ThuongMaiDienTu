@@ -23,7 +23,6 @@ class KhachHangController {
       if (result != null) {
         res.status(200).send({
           data: result,
-          error: "null",
         });
       } else {
         res.status(404).send({

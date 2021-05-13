@@ -15,7 +15,6 @@ class DoanhNghiepController {
     if (result != null) {
       res.status(200).send({
         data: result,
-        error: "null",
       });
     } else {
       res.status(404).send({
@@ -164,7 +163,6 @@ class DoanhNghiepController {
       const shippingPackage = await GoiVanChuyen.find({ Status: "ACTIVE" });
       res.status(200).send({
         data: shippingPackage,
-        error: "",
       });
     } catch (error) {
       res.status(500).send({
@@ -186,7 +184,6 @@ class DoanhNghiepController {
         });
         res.status(200).send({
           data: shippingPackage,
-          error: "",
         });
       } else {
         res.status(400).send({
@@ -214,7 +211,6 @@ class DoanhNghiepController {
         });
         res.status(200).send({
           data: donHang,
-          error: "",
         });
       } else {
         res.status(400).send({
@@ -533,7 +529,6 @@ class DoanhNghiepController {
             {
               res.status(200).send({
                 data: result,
-                error: "",
               });
             }
             else
@@ -652,7 +647,6 @@ class DoanhNghiepController {
             {
               res.status(200).send({
                 data: result,
-                error: "",
               });
             }
             else
@@ -882,7 +876,6 @@ class DoanhNghiepController {
                 {
                   res.status(200).send({
                     data: result,
-                    error: "",
                   });
                 }
                 else

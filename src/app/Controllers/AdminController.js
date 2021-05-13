@@ -267,7 +267,7 @@ class AdminController {
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "ADMIN") {
-          var check = await Order.findOne({ _id: idGoiDoanhNghiep });
+          var check = await GoiDoanhNghiep.findOne({ _id: idGoiDoanhNghiep });
           if (check != null) {
             var resultKH = await GoiDoanhNghiep.findOneAndUpdate(
               { _id: idGoiDoanhNghiep },
@@ -398,7 +398,6 @@ class AdminController {
           var resultKH = await KhachHang.find({});
           res.status(200).send({
             data: resultKH,
-            error: "null",
           });
         } else {
           res.status(404).send({
@@ -475,7 +474,6 @@ class AdminController {
           var resultDN = await DoanhNghiep.find({});
           res.status(200).send({
             data: resultDN,
-            error: "null",
           });
         } else {
           res.status(404).send({
