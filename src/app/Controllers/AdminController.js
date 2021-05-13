@@ -494,6 +494,39 @@ class AdminController {
       });
     }
   }
+  //Get admin/show-enterprises-inactive
+  async ShowEnterprisesInactive(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var resultDN = await DoanhNghiep.find({TrangThai:"INACTIVE"});
+          res.status(200).send({
+            data: resultDN,
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authorization",
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "No Account",
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
+    }
+  }
+
 
   //put admin/edit-enterprises
   async EditProfileEnterprise(req, res, next) {
