@@ -10,6 +10,6 @@ function route(app) {
   app.use("/me", meRouter);
   app.use("/admin", adminRouter);
 
-  app.get("/api/info", (req, res) => res.send("Welcome to EC18B010"));
+  app.get("/api/info", (req, res) => res.send("Welcome to EC18B010 - Tu"));
 }
 module.exports = route;
