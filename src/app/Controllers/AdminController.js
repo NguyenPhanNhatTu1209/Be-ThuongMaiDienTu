@@ -267,7 +267,7 @@ class AdminController {
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "ADMIN") {
-          var check = await Order.findOne({ _id: idGoiDoanhNghiep });
+          var check = await GoiDoanhNghiep.findOne({ _id: idGoiDoanhNghiep });
           if (check != null) {
             var resultKH = await GoiDoanhNghiep.findOneAndUpdate(
               { _id: idGoiDoanhNghiep },
