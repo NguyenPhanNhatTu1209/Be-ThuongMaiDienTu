@@ -3,6 +3,8 @@ const router = express.Router();
 
 const doanhnghiepController = require("../app/Controllers/DoanhNghiepController.js");
 
+router.get("/show-product-type", doanhnghiepController.ShowProductType);
+
 router.post(
   "/create-shipping-package",
   doanhnghiepController.CreateShippingPackage
