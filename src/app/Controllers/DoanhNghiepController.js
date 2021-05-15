@@ -902,6 +902,39 @@ class DoanhNghiepController {
       });
     }
   }
+
+  //get enterprises/show-product-type
+  async ShowProductType(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "DOANHNGHIEP") {
+          var resultLoaiSanPham = await LoaiHangHoaSanPham.find();
+          res.status(200).send({
+            data: resultLoaiSanPham,
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
+    }
+  }
 }
 
 module.exports = new DoanhNghiepController();
