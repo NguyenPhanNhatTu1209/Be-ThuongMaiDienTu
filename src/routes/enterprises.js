@@ -26,6 +26,7 @@ router.get("/show-goidoanhnghiep", doanhnghiepController.showGoiDN);
 router.get("/show-order-by-customers", doanhnghiepController.ShowOrderByCustomers);
 router.put("/update-delivering-order", doanhnghiepController.UpdateDeliveringOrder);
 router.put("/update-delivered-order", doanhnghiepController.UpdateDeliveredOrder);
+router.get("/show-product-type", doanhnghiepController.ShowProductType);
 router.post("/create-bill-package", doanhnghiepController.CreateBillPackage);
 router.get("/show-order-in-one-week-by-enterprise", doanhnghiepController.ShowOrderByOneWeek);
 router.get("/show-order-in-three-month-by-enterprise", doanhnghiepController.ShowOrderByThreeMonth);
