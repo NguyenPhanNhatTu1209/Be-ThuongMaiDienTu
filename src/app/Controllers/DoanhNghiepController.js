@@ -86,7 +86,10 @@ class DoanhNghiepController {
         if (trangThaiDoanhNghiep == "ACTIVE") {
           const shippingPackageOld = await GoiVanChuyen.findOneAndUpdate(
             { _id: idPackageOld, Status: "ACTIVE" },
-            { Status: "INACTIVE" }
+            { Status: "INACTIVE" },
+            {
+              new: true 
+            }
           );
           if (shippingPackageOld != null) {
             const shippingPackageNew = await GoiVanChuyen.create(createData);
