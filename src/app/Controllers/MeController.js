@@ -59,20 +59,18 @@ class MeController {
       const _id = await verifyToken(token);
       var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
       if (result != null) {
+        if(req.files["logo"]!=null)
+        {
           const logo = req.files["logo"][0];
-          const doc = req.files["doc"][0];
           const nameLogo = logo.filename;
-          const nameDoc = doc.filename;
           const tenDN = req.body.TenDoanhNghiep;
           const sdtDN = req.body.SoDienThoai;
           const diaChiDN = req.body.DiaChi;
           const urlLogo = await UploadImage(nameLogo, "Logos/");
-          const urlDoc = await UploadImage(nameDoc, "Docs/");
           var updateValueDN = {
             TenDoanhNghiep: tenDN,
             SoDienThoai: sdtDN,
             DiaChi: diaChiDN,
-            GiayPhep: urlDoc,
             Logo: urlLogo,
           }
           var resultDN = await DoanhNghiep.findOneAndUpdate(
@@ -86,6 +84,31 @@ class MeController {
             data: resultDN,
             error: "null",
           });
+        }
+        else 
+        {
+          const tenDN = req.body.TenDoanhNghiep;
+          const sdtDN = req.body.SoDienThoai;
+          const diaChiDN = req.body.DiaChi;
+          
+          var updateValueDN = {
+            TenDoanhNghiep: tenDN,
+            SoDienThoai: sdtDN,
+            DiaChi: diaChiDN,
+          }
+          var resultDN = await DoanhNghiep.findOneAndUpdate(
+            { id_account: _id },
+            updateValueDN,
+            {
+              new: true,
+            }
+          );
+          res.status(200).send({
+            data: resultDN,
+            error: "null",
+          });
+        }
+          
       } else {
         res.status(404).send({
           data: "",
