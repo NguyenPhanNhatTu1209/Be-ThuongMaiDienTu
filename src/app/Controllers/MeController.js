@@ -13,7 +13,7 @@ const bcrypt = require("bcrypt");
 const { UploadImage } = require("./index");
 
 
-const { createToken, verifyToken } = require("./index");
+const { createToken, verifyToken, sortObject } = require("./index");
 const Paypal = require("../Models/Paypal");
 const { fileURLToPath } = require("url");
 
@@ -419,6 +419,41 @@ class MeController {
       });
     }
   }
+
+  async SuccessVnPayOrder(req, res, next) {
+    var vnp_Params = req.query;
+    var secureHash = vnp_Params["vnp_SecureHash"];
+    var id = vnp_Params["vnp_OrderInfo"];
+    var amount = vnp_Params["vnp_Amount"] /100;
+    delete vnp_Params["vnp_SecureHash"];
+    delete vnp_Params["vnp_SecureHashType"];
+  
+    vnp_Params = sortObject(vnp_Params);
+  
+    var tmnCode = "JCO3SG7X";
+    var secretKey = "BKPYNKKKBEAZCHZFHLIXKMXXCODHEVSU";
+  
+    var querystring = require("qs");
+    var signData =
+      secretKey + querystring.stringify(vnp_Params, { encode: false });
+  
+    var sha256 = require("sha256");
+  
+    var checkSum = sha256(signData);
+  
+    if (secureHash === checkSum) {
+      //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
+  
+      res.send({
+        message: "Success",
+        paymentId: id,
+        amount:amount,
+      });
+    } else {
+      res.render("success", { code: "97" });
+    }
+  }
+  
   
 }
 module.exports = new MeController();
