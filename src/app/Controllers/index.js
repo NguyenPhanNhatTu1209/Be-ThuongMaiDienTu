@@ -165,6 +165,27 @@ async function UploadImage(name, folder) {
 
   return urls[0];
 }
+function sortObject(o) {
+  var sorted = {},
+      key, a = [];
+
+  for (key in o) {
+      if (o.hasOwnProperty(key)) {
+          a.push(key);
+      }
+  }
+
+  a.sort();
+
+  for (key = 0; key < a.length; key++) {
+      sorted[a[key]] = o[a[key]];
+  }
+  return sorted;
+}
+
+
+
+
 
 module.exports = {
   createToken,
@@ -176,4 +197,5 @@ module.exports = {
   paymentMethodPackage,
   RefundPayment,
   UploadImage,
+  sortObject,
 };

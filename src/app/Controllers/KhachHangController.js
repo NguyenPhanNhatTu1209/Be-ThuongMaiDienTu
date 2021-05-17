@@ -13,12 +13,12 @@ const {
   FormatDollar,
   paymentMethodPackage,
   RefundPayment,
+  sortObject
 } = require("./index");
 class KhachHangController {
   //get customers/show_goikhachhang
   async showGoiKH(req, res, next) {
-    try
-    {
+    try {
       var result = await GoiKhachHang.find({ DeleteAt: "False" });
       if (result != null) {
         res.status(200).send({
@@ -30,9 +30,7 @@ class KhachHangController {
           error: "No package",
         });
       }
-    }
-    catch(error)
-    {
+    } catch (error) {
       console.log(error);
       res.status(500).send({
         error: error,
@@ -76,7 +74,7 @@ class KhachHangController {
         id_DoanhNghiep,
         id_GoiShipping,
       };
-      var result = await TaiKhoan.findOne({ _id ,Status:"ACTIVE"}); //muc dich la lay role
+      var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "KHACHHANG") {
@@ -260,12 +258,12 @@ class KhachHangController {
   }
   // Put me/confirm-donhang
   async XacNhanDonHang(req, res, next) {
-    try{
+    try {
       var idDonHangKhachHang = req.body.idDonHang;
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
       var update = { TrangThai: "Đã Nhận Hàng" };
-      var result = await TaiKhoan.findOne({ _id,Status:"ACTIVE" }); //muc dich la lay role
+      var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "KHACHHANG") {
@@ -292,24 +290,22 @@ class KhachHangController {
           error: "Not found user!",
         });
       }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
     }
-   catch(error)
-   {
-    res.status(500).send({
-      data: "",
-      error: error,
-    });
-   }
   }
 
   // Delete me/delete-donhang
   async HuyDonHang(req, res, next) {
-    try{
+    try {
       var idDonHangKhachHang = req.body.idDonHang;
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
       var update = { TrangThai: "Đã Hủy Đơn" };
-      var result = await TaiKhoan.findOne({ _id,Status:"ACTIVE" }); //muc dich la lay role
+      var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "KHACHHANG") {
@@ -331,7 +327,7 @@ class KhachHangController {
                 error: resultRefund,
               });
             } else {
-              resultRefund=refund;
+              resultRefund = refund;
               await KhachHang.findOneAndUpdate({ _id: idKhachHang }, updateKH, {
                 new: true,
               });
@@ -364,14 +360,12 @@ class KhachHangController {
           error: "Not found user!",
         });
       }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
     }
-   catch(error)
-   {
-    res.status(500).send({
-      data: "",
-      error: error,
-    });
-   }
   }
 
   // Post customers/create-bill-package
@@ -395,7 +389,7 @@ class KhachHangController {
         id_DoanhNghiep,
         id_KhachHang,
       };
-      var result = await TaiKhoan.findOne({ _id,Status:"ACTIVE" }); //muc dich la lay role
+      var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "KHACHHANG") {
@@ -455,6 +449,338 @@ class KhachHangController {
             error: "Not found user!",
           });
         }
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        error: error,
+      });
+    }
+  }
+  //Post customers/create_payment_vnpayurl
+  async CreatePaymentVnpayurl(req, res, next) {
+    try {
+      var {
+        TenNguoiNhan,
+        SoDienThoaiNguoiNhan,
+        NoiLayHang,
+        NoiGiaoHang,
+        TrangThai,
+        KhoiLuong,
+        LoaiHangHoa,
+        TenLoaiHang,
+        GiamGia,
+        TongChiPhi,
+        ThanhToan,
+        id_KhachHang,
+        id_DoanhNghiep,
+        id_GoiShipping,
+      } = req.body;
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var update = {
+        TenNguoiNhan,
+        SoDienThoaiNguoiNhan,
+        NoiLayHang,
+        NoiGiaoHang,
+        TrangThai,
+        KhoiLuong,
+        LoaiHangHoa,
+        TenLoaiHang,
+        GiamGia,
+        TongChiPhi,
+        ThanhToan,
+        id_KhachHang,
+        id_DoanhNghiep,
+        id_GoiShipping,
+      };
+      var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "KHACHHANG") {
+          var resultKH = await KhachHang.findOne({ id_account: _id });
+          var resultGoiShipping = await GoiVanChuyen.findOne({
+            _id: update.id_GoiShipping,
+          });
+          var resultLoaiHangHoa = await LoaiHangHoaSanPham.findOne({
+            _id: resultGoiShipping._doc.IdLoaiHangHoa,
+          });
+          var giamGiaTaiKhoan = resultKH._doc.GiamGia;
+          var giamGiaShipping = resultGoiShipping._doc.KhuyenMai;
+          update.LoaiHangHoa = resultLoaiHangHoa.LoaiHangHoa;
+          var khoiLuongBatBuoc = resultLoaiHangHoa.SoKy;
+          update.id_KhachHang = resultKH._doc._id;
+          update.id_DoanhNghiep = resultGoiShipping._doc.IdCongTy;
+          var resultDoanhNghiep = await DoanhNghiep.findOne({
+            _id: update.id_DoanhNghiep,
+          });
+          var ngayHetHanGoiKhachHang = resultKH._doc.NgayHetHan;
+          var ngayThucTai = Date.now();
+          var soLuongDonHangGoiKhachHang = resultKH._doc.SoDonHang;
+          var ngayHetHanGoiDoanhNghiep = resultDoanhNghiep._doc.NgayHetHan;
+          if (
+            update.KhoiLuong > resultKH._doc.KhoiLuongToiDa ||
+            ngayThucTai > ngayHetHanGoiKhachHang ||
+            soLuongDonHangGoiKhachHang == 0
+          ) {
+            if (update.KhoiLuong > khoiLuongBatBuoc) {
+              res.status(400).send({
+                data: "",
+                error: "Gói vận chuyển này không thích hợp với số ký",
+              });
+            } else {
+              giamGiaTaiKhoan = 0;
+              update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
+              var tongGiamgia = update.GiamGia;
+              var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
+              chiPhiVanChuyen =
+                chiPhiVanChuyen - (chiPhiVanChuyen * tongGiamgia) / 100;
+              update.TongChiPhi = chiPhiVanChuyen.toString();
+              console.log(chiPhiVanChuyen);
+              var resultOrder = await Order.create(update);
+              var idDonHangMoiTao = resultOrder._doc._id;
+              var resultPayment;
+              var ipAddr =
+                req.headers["x-forwarded-for"] ||
+                req.connection.remoteAddress ||
+                req.socket.remoteAddress ||
+                req.connection.socket.remoteAddress;
+
+              var dateFormat = require("dateformat");
+
+              var tmnCode = "JCO3SG7X";
+              var secretKey = "BKPYNKKKBEAZCHZFHLIXKMXXCODHEVSU";
+              var vnpUrl = "http://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+              var returnUrl = "http://localhost:3000/me/vnpay_return";
+
+              var date = new Date();
+
+              var createDate = dateFormat(date, "yyyymmddHHmmss");
+              var orderId = dateFormat(date, "HHmmss");
+              var amount = chiPhiVanChuyen.toString();
+              var bankCode = "NCB";
+
+              var orderInfo = "Thanh toan SuperHub";
+              var orderType = "payment";
+              var locale = "vn";
+
+              var currCode = "VND";
+              var vnp_Params = {};
+              vnp_Params["vnp_Version"] = "2";
+              vnp_Params["vnp_Command"] = "pay";
+              vnp_Params["vnp_TmnCode"] = tmnCode;
+              // vnp_Params['vnp_Merchant'] = ''
+              vnp_Params["vnp_Locale"] = locale;
+              vnp_Params["vnp_CurrCode"] = currCode;
+              vnp_Params["vnp_TxnRef"] = orderId;
+              vnp_Params["vnp_OrderInfo"] = orderInfo;
+              vnp_Params["vnp_OrderType"] = orderType;
+              vnp_Params["vnp_Amount"] = amount *100;
+              vnp_Params["vnp_ReturnUrl"] = returnUrl;
+              vnp_Params["vnp_IpAddr"] = ipAddr;
+              vnp_Params["vnp_CreateDate"] = createDate;
+              if (bankCode !== null && bankCode !== "") {
+                vnp_Params["vnp_BankCode"] = bankCode;
+              }
+
+              vnp_Params = sortObject(vnp_Params);
+
+              var querystring = require("qs");
+              var signData =
+                secretKey +
+                querystring.stringify(vnp_Params, { encode: false });
+
+              var sha256 = require("sha256");
+
+              var secureHash = sha256(signData);
+
+              vnp_Params["vnp_SecureHashType"] = "SHA256";
+              vnp_Params["vnp_SecureHash"] = secureHash;
+              vnpUrl +=
+                "?" + querystring.stringify(vnp_Params, { encode: true });
+              resultPayment = vnpUrl;
+
+              // Payment(
+              //   req,
+              //   formatDollar,
+              //   idDonHangMoiTao,
+              //   async function (error, payment) {
+              //     if (error) {
+              //       resultPayment = error;
+              //     } else {
+              //       for (let i = 0; i < payment.links.length; i++) {
+              //         if (payment.links[i].rel === "approval_url") {
+              //           resultPayment = payment.links[i].href;
+              update.TongChiPhi = chiPhiVanChuyen.toString();
+              var soLuongDonHangDoanhNghiep = resultDoanhNghiep._doc.SoDonHang;
+              if (
+                soLuongDonHangDoanhNghiep > 0 &&
+                ngayThucTai <= ngayHetHanGoiDoanhNghiep
+              ) {
+                soLuongDonHangDoanhNghiep = soLuongDonHangDoanhNghiep - 1;
+                resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
+                await DoanhNghiep.findOneAndUpdate(
+                  { _id: update.id_DoanhNghiep },
+                  resultDoanhNghiep._doc,
+                  {
+                    new: true,
+                  }
+                );
+                res.status(200).send({
+                  data: resultPayment,
+                  error: "Gói khách hàng không được sử dụng vì không hợp lệ",
+                });
+              } else {
+                res.status(200).send({
+                  data: "null",
+                  error: "Gói vận chuyển hết hiệu lực vui lòng chọn gói khác",
+                });
+              }
+              //         }
+              //       }
+              //     }
+              //   }
+              // );
+            }
+          } else {
+            if (update.KhoiLuong > khoiLuongBatBuoc) {
+              res.status(400).send({
+                data: "",
+                error: "Gói vận chuyển này không thích hợp với số ký",
+              });
+            } else {
+              update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
+              var tongGiamgia = update.GiamGia;
+              var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
+              chiPhiVanChuyen =
+                chiPhiVanChuyen - (chiPhiVanChuyen * tongGiamgia) / 100;
+              console.log(chiPhiVanChuyen);
+              update.TongChiPhi = String(chiPhiVanChuyen);
+              var resultOrder = await Order.create(update);
+              var idDonHangMoiTao = resultOrder._doc._id;
+              var resultPayment;
+
+              var ipAddr =
+                req.headers["x-forwarded-for"] ||
+                req.connection.remoteAddress ||
+                req.socket.remoteAddress ||
+                req.connection.socket.remoteAddress;
+
+              var dateFormat = require("dateformat");
+
+              var tmnCode = "JCO3SG7X";
+              var secretKey = "BKPYNKKKBEAZCHZFHLIXKMXXCODHEVSU";
+              var vnpUrl = "http://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+              var returnUrl = "http://localhost:3000/me/vnpay_return";
+
+              var date = new Date();
+
+              var createDate = dateFormat(date, "yyyymmddHHmmss");
+              var orderId = dateFormat(date, "HHmmss");
+              var amount = chiPhiVanChuyen.toString();
+              var bankCode = "NCB";
+
+              var orderInfo = "Thanh toan SuperHub";
+              var orderType = "payment";
+              var locale = "vn";
+
+              var currCode = "VND";
+              var vnp_Params = {};
+              vnp_Params["vnp_Version"] = "2";
+              vnp_Params["vnp_Command"] = "pay";
+              vnp_Params["vnp_TmnCode"] = tmnCode;
+              // vnp_Params['vnp_Merchant'] = ''
+              vnp_Params["vnp_Locale"] = locale;
+              vnp_Params["vnp_CurrCode"] = currCode;
+              vnp_Params["vnp_TxnRef"] = orderId;
+              vnp_Params["vnp_OrderInfo"] = orderInfo;
+              vnp_Params["vnp_OrderType"] = orderType;
+              vnp_Params["vnp_Amount"] = amount;
+              vnp_Params["vnp_ReturnUrl"] = returnUrl;
+              vnp_Params["vnp_IpAddr"] = ipAddr;
+              vnp_Params["vnp_CreateDate"] = createDate;
+              if (bankCode !== null && bankCode !== "") {
+                vnp_Params["vnp_BankCode"] = bankCode;
+              }
+
+              vnp_Params = sortObject(vnp_Params);
+
+              var querystring = require("qs");
+              var signData =
+                secretKey +
+                querystring.stringify(vnp_Params, { encode: false });
+
+              var sha256 = require("sha256");
+
+              var secureHash = sha256(signData);
+
+              vnp_Params["vnp_SecureHashType"] = "SHA256";
+              vnp_Params["vnp_SecureHash"] = secureHash;
+              vnpUrl +=
+                "?" + querystring.stringify(vnp_Params, { encode: true });
+              resultPayment = vnpUrl;
+              // Payment(
+              //   formatDollar,
+              //   idDonHangMoiTao,
+              //   async function (error, payment) {
+              //     if (error) {
+              //       resultPayment = error;
+              //     } else {
+              //       for (let i = 0; i < payment.links.length; i++) {
+              //         if (payment.links[i].rel === "approval_url") {
+              //           resultPayment = payment.links[i].href;
+              var soLuongDonHangDoanhNghiep = resultDoanhNghiep._doc.SoDonHang;
+              if (
+                soLuongDonHangDoanhNghiep > 0 &&
+                ngayThucTai <= ngayHetHanGoiDoanhNghiep
+              ) {
+                soLuongDonHangDoanhNghiep = soLuongDonHangDoanhNghiep - 1;
+                resultDoanhNghiep._doc.SoDonHang = soLuongDonHangDoanhNghiep;
+                await DoanhNghiep.findOneAndUpdate(
+                  { _id: update.id_DoanhNghiep },
+                  resultDoanhNghiep._doc,
+                  {
+                    new: true,
+                  }
+                );
+                var soLuongDonHang = resultKH._doc.SoDonHang;
+                soLuongDonHang = soLuongDonHang - 1;
+                resultKH._doc.SoDonHang = soLuongDonHang;
+                await KhachHang.findOneAndUpdate(
+                  { id_account: _id },
+                  resultKH._doc,
+                  {
+                    new: true,
+                  }
+                );
+                res.status(200).send({
+                  data: resultPayment,
+                  error: "null",
+                });
+              } else {
+                res.status(200).send({
+                  data: "null",
+                  error: "Gói vận chuyển hết hiệu lực vui lòng chọn gói khác",
+                });
+              }
+              //         }
+              //       }
+              //     }
+              //   }
+              // );
+            }
+          }
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
       }
     } catch (error) {
       console.log(error);
