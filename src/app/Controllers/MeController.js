@@ -419,7 +419,7 @@ class MeController {
       });
     }
   }
-
+  //Get me/vnpay_return
   async SuccessVnPayOrder(req, res, next) {
     var vnp_Params = req.query;
     var secureHash = vnp_Params["vnp_SecureHash"];
@@ -443,7 +443,16 @@ class MeController {
   
     if (secureHash === checkSum) {
       //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
-  
+      
+      await Order.findOneAndUpdate(
+        { _id: id },
+        {
+          ThanhToan: "Đã Thanh Toán",
+        },
+        {
+          new: true,
+        }
+      );
       res.send({
         message: "Success",
         paymentId: id,
@@ -454,6 +463,105 @@ class MeController {
     }
   }
   
+  //Get me/vnpay_return_package
+  async SuccessVnPayPackage(req, res, next) {
+    var vnp_Params = req.query;
+    var secureHash = vnp_Params["vnp_SecureHash"];
+    var id = vnp_Params["vnp_OrderInfo"];
+    var amount = vnp_Params["vnp_Amount"] /100;
+    delete vnp_Params["vnp_SecureHash"];
+    delete vnp_Params["vnp_SecureHashType"];
   
+    vnp_Params = sortObject(vnp_Params);
+  
+    var tmnCode = "JCO3SG7X";
+    var secretKey = "BKPYNKKKBEAZCHZFHLIXKMXXCODHEVSU";
+  
+    var querystring = require("qs");
+    var signData =
+      secretKey + querystring.stringify(vnp_Params, { encode: false });
+  
+    var sha256 = require("sha256");
+  
+    var checkSum = sha256(signData);
+  
+    if (secureHash === checkSum) {
+      //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
+      var donHangDichVu = await DonHangDichVu.findOneAndUpdate(
+        { _id: id },
+        {
+          ThanhToan: "Đã Thanh Toán",
+        },
+        {
+          new: true,
+        }
+      );
+      var resultDN = await DoanhNghiep.findOne({
+        _id: donHangDichVu._doc.id_DoanhNghiep,
+      });
+      if (resultDN == null) {
+        var resultGoiDV = await GoiKhachHang.findOne({
+          DeleteAt: "False",
+          _id: donHangDichVu._doc.id_GoiDichVu,
+        });
+        const {
+          TenDichVuKhachHang,
+          KhoiLuongToiDa,
+          SoDonHang,
+          GiamGia,
+        } = resultGoiDV;
+        var soNgay = resultGoiDV.HanSuDung;
+        // Create new Date instance
+        var date = new Date();
+        // Add a day
+        date.setDate(date.getDate() + soNgay);
+        const updateKH = {
+          TenDichVuKhachHang,
+          KhoiLuongToiDa,
+          NgayHetHan: date,
+          SoDonHang,
+          GiamGia,
+        };
+        var resultKH = await KhachHang.findOne({
+          _id: donHangDichVu._doc.id_KhachHang,
+        });
+        await KhachHang.findOneAndUpdate(
+          { _id: donHangDichVu._doc.id_KhachHang },
+          updateKH,
+          {
+            new: true,
+          }
+        );
+      } else {
+        var resultGoiDV = await GoiDoanhNghiep.findOne({
+          DeleteAt: "False",
+          _id: donHangDichVu._doc.id_GoiDichVu,
+        });
+        const { TenGoi, SoDonHang } = resultGoiDV;
+        var soNgay = resultGoiDV.HanSuDung;
+        // Create new Date instance
+        var date = new Date();
+        // Add a day
+        date.setDate(date.getDate() + soNgay);
+        const updateDN = { TenGoi, NgayHetHan: date, SoDonHang };
+        await DoanhNghiep.findOneAndUpdate(
+          { _id: donHangDichVu._doc.id_DoanhNghiep },
+          updateDN,
+          {
+            new: true,
+          }
+        );
+      }
+      res.send({
+        message: "Success",
+        paymentId: id,
+        amount:amount,
+      });
+
+    } else {
+      res.render("success", { code: "97" });
+    }
+  }
+
 }
 module.exports = new MeController();

@@ -9,5 +9,5 @@ router.put("/confirm-donhang", khachhangController.XacNhanDonHang);
 router.delete("/delete-donhang", khachhangController.HuyDonHang);
 router.post("/create-bill-package", khachhangController.CreateBillPackage);
 router.post("/create_payment_vnpayurl", khachhangController.CreatePaymentVnpayurl);
-
+router.post("/create_payment_vnpayurl_package", khachhangController.CreatePaymentVnpayurlPackage);
 module.exports = router;
