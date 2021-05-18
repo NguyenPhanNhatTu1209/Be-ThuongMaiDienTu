@@ -13,7 +13,7 @@ router.put(
   "/update-shipping-package",
   doanhnghiepController.UpdateShippingPackage
 );
-router.delete(
+router.put(
   "/delete-shipping-package",
   doanhnghiepController.DeleteShippingPackage
 );
