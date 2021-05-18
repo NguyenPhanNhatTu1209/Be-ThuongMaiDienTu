@@ -19,7 +19,7 @@ router.put("/editprofile-enterprise", adminController.EditProfileEnterprise);
 router.get("/show-product-type", adminController.ShowProductType);
 router.post("/create-product-type", adminController.CreateProductType);
 router.put("/update-product-type", adminController.UpdateProductType);
-router.delete("/delete-product-type", adminController.DeleteProductType);
+router.put("/delete-product-type", adminController.DeleteProductType);
 
 
 

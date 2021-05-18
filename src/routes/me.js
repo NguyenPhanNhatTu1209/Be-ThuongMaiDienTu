@@ -30,7 +30,7 @@ router.put("/edit-profile-enterprise", cpUpload, meController.editProfileDN);
 router.put("/edit-profile-customer", meController.editProfileKH);
 router.post("/add-address", diachiController.ThemDiaChi);
 router.put("/edit-address", diachiController.SuaDiaChi);
-router.delete("/delete-address", diachiController.XoaDiaChi);
+router.put("/delete-address", diachiController.XoaDiaChi);
 router.put("/change-password", meController.ChangePassword);
 router.get("/show-product-type", meController.ShowProductType);
 router.get("/success", meController.PaymentSuccess);
@@ -39,6 +39,7 @@ router.get("/successPackageBill", meController.PaymentSuccessBillPackage);
 router.get("/cancelPackageBill", meController.CancelPaymentBillPackage);
 router.post("/refund", meController.RefundPayment);
 router.get("/vnpay_return", meController.SuccessVnPayOrder);
+router.get("/vnpay_return_package", meController.SuccessVnPayPackage);
 
 
 module.exports = router;
