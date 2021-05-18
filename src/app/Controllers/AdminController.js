@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 const TaiKhoan = require("../Models/TaiKhoan");
 const GoiKhachHang = require("../Models/GoiKhachHang");
@@ -9,11 +8,10 @@ const KhachHang = require("../Models/KhachHang");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
 const nodemailer = require("nodemailer");
 
-
 class AdminController {
   //Post admin/create-goikhachhang
   async creategoiKH(req, res, next) {
-    try{
+    try {
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
       var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
@@ -37,20 +35,16 @@ class AdminController {
           error: "Not found user!",
         });
       }
-    }
-    catch(error)
-    {
+    } catch (error) {
       res.status(500).send({
         data: "",
         error: error,
       });
     }
-
   }
   //Post admin/create-goidoanhnghiep
   async creategoiDN(req, res, next) {
-    try
-    {
+    try {
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
       var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
@@ -74,9 +68,7 @@ class AdminController {
           error: "Not found user!",
         });
       }
-    }
-    catch(error)
-    {
+    } catch (error) {
       res.status(500).send({
         data: "",
         error: error,
@@ -336,30 +328,33 @@ class AdminController {
               to: EmailDN,
               from: process.env.EmailAdmin,
               subject: "Enterprise Active",
-              text: 'Tài khoản doanh nghiệp của bạn đã được kích hoạt.',
+              text: "Tài khoản doanh nghiệp của bạn đã được kích hoạt.",
             };
-             smtpTransport.sendMail(mailOptions, async function (error, response) {
-              if (error) {
-                console.log(error);
-                res.status(400).send({
-                  data: "null",
-                  error: "Gửi không thành công",
-                });
-              } else {
-                var resultKH = await DoanhNghiep.findOneAndUpdate(
-                  { _id: idDoanhNghiep },
-                  updateValue,
-                  {
-                    new: true,
-                  }
-                );
-                res.status(200).send({
-                  Data: resultKH,
-                  Success: "Đã gửi Email thành công",
-                  error: "null",
-                });
+            smtpTransport.sendMail(
+              mailOptions,
+              async function (error, response) {
+                if (error) {
+                  console.log(error);
+                  res.status(400).send({
+                    data: "null",
+                    error: "Gửi không thành công",
+                  });
+                } else {
+                  var resultKH = await DoanhNghiep.findOneAndUpdate(
+                    { _id: idDoanhNghiep },
+                    updateValue,
+                    {
+                      new: true,
+                    }
+                  );
+                  res.status(200).send({
+                    Data: resultKH,
+                    Success: "Đã gửi Email thành công",
+                    error: "null",
+                  });
+                }
               }
-            });
+            );
           } else {
             res.status(400).send({
               data: "",
@@ -503,7 +498,7 @@ class AdminController {
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "ADMIN") {
-          var resultDN = await DoanhNghiep.find({TrangThai:"INACTIVE"});
+          var resultDN = await DoanhNghiep.find({ TrangThai: "INACTIVE" });
           res.status(200).send({
             data: resultDN,
           });
@@ -526,7 +521,38 @@ class AdminController {
       });
     }
   }
-
+  //Get admin/show-enterprises-active
+  async ShowEnterprisesActive(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var resultDN = await DoanhNghiep.find({ TrangThai: "ACTIVE" });
+          res.status(200).send({
+            data: resultDN,
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authorization",
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "No Account",
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
+    }
+  }
 
   //put admin/edit-enterprises
   async EditProfileEnterprise(req, res, next) {
@@ -572,47 +598,42 @@ class AdminController {
     }
   }
 
-//get admin/show-product-type
-async ShowProductType(req, res, next) {
-  try
-  {
-    const token = req.get("Authorization").replace("Bearer ", "");
-    const _id = await verifyToken(token);
-    var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
-    if (result != null) {
-      const roleDT = result.Role;
-      if (roleDT == "ADMIN") {
-        var resultLoaiSanPham = await LoaiHangHoaSanPham.find();
-        res.status(200).send({
-          data: resultLoaiSanPham,
-        });
+  //get admin/show-product-type
+  async ShowProductType(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var resultLoaiSanPham = await LoaiHangHoaSanPham.find();
+          res.status(200).send({
+            data: resultLoaiSanPham,
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
       } else {
         res.status(404).send({
           data: "",
-          error: "No Authentication",
+          error: "Not found user!",
         });
       }
-    } else {
-      res.status(404).send({
+    } catch (error) {
+      res.status(500).send({
         data: "",
-        error: "Not found user!",
+        error: error,
       });
     }
   }
-  catch (error)
-  {
-    res.status(500).send({
-      data: "",
-      error: error,
-    });
-  }
-}
 
-
-   //Post admin/create-product-type
-   async CreateProductType(req, res, next) {
-    try
-    {
+  //Post admin/create-product-type
+  async CreateProductType(req, res, next) {
+    try {
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
       var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
@@ -636,9 +657,7 @@ async ShowProductType(req, res, next) {
           error: "Not found user!",
         });
       }
-    }
-    catch (error)
-    {
+    } catch (error) {
       res.status(500).send({
         data: "",
         error: error,
@@ -646,101 +665,129 @@ async ShowProductType(req, res, next) {
     }
   }
 
-     //Put admin/update-product-type
-     async UpdateProductType(req, res, next) {
-      try
-      {
-        const _idLoaiSanPham = req.body.idLoaiSanPham;
-        const {LoaiHangHoa,SoKy} = req.body;
-        const token = req.get("Authorization").replace("Bearer ", "");
-        const _id = await verifyToken(token);
-        var updateValue = {
-          LoaiHangHoa,
-          SoKy,
-        };
-        var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
-        if (result != null) {
-          const roleDT = result.Role;
-          if (roleDT == "ADMIN") { 
-            var resultLoaiSanPham = await LoaiHangHoaSanPham.findOneAndUpdate(
-              { _id: _idLoaiSanPham},
-              updateValue,
-              {
-                new: true,
-              }
-            );
-            res.status(200).send({
-              data: resultLoaiSanPham,
-              error: "null",
-            });
-          } else {
-            res.status(404).send({
-              data: "",
-              error: "No Authentication",
-            });
-          }
+  //Put admin/update-product-type
+  async UpdateProductType(req, res, next) {
+    try {
+      const _idLoaiSanPham = req.body.idLoaiSanPham;
+      const { LoaiHangHoa, SoKy } = req.body;
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var updateValue = {
+        LoaiHangHoa,
+        SoKy,
+      };
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var resultLoaiSanPham = await LoaiHangHoaSanPham.findOneAndUpdate(
+            { _id: _idLoaiSanPham },
+            updateValue,
+            {
+              new: true,
+            }
+          );
+          res.status(200).send({
+            data: resultLoaiSanPham,
+            error: "null",
+          });
         } else {
           res.status(404).send({
             data: "",
-            error: "Not found user!",
+            error: "No Authentication",
           });
         }
-      }
-      catch (error)
-      {
-        res.status(500).send({
+      } else {
+        res.status(404).send({
           data: "",
-          error: error,
+          error: "Not found user!",
         });
       }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
     }
-     //Delete admin/delete-product-type
-     async DeleteProductType(req, res, next) {
-      try
-      {
-        const _idLoaiSanPham = req.body.idLoaiSanPham;
-        const token = req.get("Authorization").replace("Bearer ", "");
-        const _id = await verifyToken(token);
-        var updateValue = {
-          Status: "INACTIVE"
-        };
-        var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
-        if (result != null) {
-          const roleDT = result.Role;
-          if (roleDT == "ADMIN") { 
-            var resultLoaiSanPham = await LoaiHangHoaSanPham.findOneAndUpdate(
-              { _id: _idLoaiSanPham},
-              updateValue,
-              {
-                new: true,
-              }
-            );
-            res.status(200).send({
-              data: resultLoaiSanPham,
-              error: "null",
-            });
-          } else {
-            res.status(404).send({
-              data: "",
-              error: "No Authentication",
-            });
-          }
+  }
+  //Put admin/delete-product-type
+  async DeleteProductType(req, res, next) {
+    try {
+      const _idLoaiSanPham = req.body.idLoaiSanPham;
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var updateValue = {
+        Status: "INACTIVE",
+      };
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var resultLoaiSanPham = await LoaiHangHoaSanPham.findOneAndUpdate(
+            { _id: _idLoaiSanPham },
+            updateValue,
+            {
+              new: true,
+            }
+          );
+          res.status(200).send({
+            data: resultLoaiSanPham,
+            error: "null",
+          });
         } else {
           res.status(404).send({
             data: "",
-            error: "Not found user!",
+            error: "No Authentication",
           });
         }
-      }
-      catch (error)
-      {
-        res.status(500).send({
+      } else {
+        res.status(404).send({
           data: "",
-          error: error,
+          error: "Not found user!",
         });
       }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
     }
+  }
+  async SearchKH(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var title = req.query.title;
+          var resultKH = await KhachHang.find( {$or:[{ 'Email': new RegExp(title)},{'SoDienThoai': new RegExp(title)}]});
+          res.status(200).send({
+            data: resultKH,
+            error: "null",
+          });
 
+          
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "No Account",
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
+    }
+  }
 }
 
 module.exports = new AdminController();
