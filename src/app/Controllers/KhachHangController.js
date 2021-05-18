@@ -7,6 +7,7 @@ const Order = require("../Models/Order");
 const DonHangDichVu = require("../Models/DonHangDichVu");
 const GoiVanChuyen = require("../Models/GoiVanChuyen");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
+const DiaChi = require("../Models/DiaChi");
 const {
   verifyToken,
   Payment,
@@ -785,6 +786,39 @@ class KhachHangController {
     } catch (error) {
       console.log(error);
       res.status(500).send({
+        error: error,
+      });
+    }
+  }
+  //get customers/show_diachi
+  async showDiaChi(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "KHACHHANG") {
+          var resultAddr = await DiaChi.find({ id_account:_id });
+          res.status(200).send({
+            data: resultAddr,
+            error: "null",
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
         error: error,
       });
     }
