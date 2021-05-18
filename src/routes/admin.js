@@ -15,11 +15,13 @@ router.get("/show-customers", adminController.ShowCustomers);
 router.put("/editprofile-customer", adminController.EditProfileCustomer);
 router.get("/show-enterprises", adminController.ShowEnterprises);
 router.get("/show-enterprises-inactive", adminController.ShowEnterprisesInactive);
+router.get("/show-enterprises-active", adminController.ShowEnterprisesActive);
 router.put("/editprofile-enterprise", adminController.EditProfileEnterprise);
 router.get("/show-product-type", adminController.ShowProductType);
 router.post("/create-product-type", adminController.CreateProductType);
 router.put("/update-product-type", adminController.UpdateProductType);
 router.put("/delete-product-type", adminController.DeleteProductType);
+router.get("/search-khachhang", adminController.SearchKH);
 
 
 
