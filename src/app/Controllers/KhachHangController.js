@@ -931,6 +931,43 @@ class KhachHangController {
       });
     }
   }
+
+  //get show-order
+  async ShowOrder(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var update = { TrangThai: "Đã Nhận Hàng" };
+      var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "KHACHHANG") {
+          var user = await KhachHang.findOne({id_account: _id});
+          var idKhachHang = user._doc._id;
+          var resultOrder = await Order.find({ id_KhachHang: idKhachHang });
+          res.status(200).send({
+            data: resultOrder,
+            error: "null",
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
+    }
+  }
 }
 
 module.exports = new KhachHangController();
