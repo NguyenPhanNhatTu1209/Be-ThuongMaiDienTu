@@ -17,7 +17,6 @@ router.put(
   "/delete-shipping-package",
   doanhnghiepController.DeleteShippingPackage
 );
-router.get("/show-shipping-package", doanhnghiepController.ShowShippingPackage);
 router.get(
   "/show-shipping-package-by-enterprise",
   doanhnghiepController.ShowShippingPackageByEnterprise

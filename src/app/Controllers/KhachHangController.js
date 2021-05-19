@@ -16,6 +16,7 @@ const {
   RefundPayment,
   sortObject,
 } = require("./index");
+const LoaiHangHoa = require("../Models/LoaiHangHoa");
 class KhachHangController {
   //get customers/show_goikhachhang
   async showGoiKH(req, res, next) {
@@ -299,7 +300,7 @@ class KhachHangController {
     }
   }
 
-  // Delete me/delete-donhang
+  // Delete me/delete-donhang (paypal ==> refund)
   async HuyDonHang(req, res, next) {
     try {
       var idDonHangKhachHang = req.body.idDonHang;
@@ -311,44 +312,86 @@ class KhachHangController {
         const roleDT = result.Role;
         if (roleDT == "KHACHHANG") {
           var resultdonHang = await Order.findOne({ _id: idDonHangKhachHang });
-          var idCongTy = resultdonHang._doc.id_DoanhNghiep;
-          var idKhachHang = resultdonHang._doc.id_KhachHang;
-          var resultKhachHang = await KhachHang.findOne({ _id: idKhachHang });
-          var resultDoanhNghiep = await DoanhNghiep.findOne({ _id: idCongTy });
-          var soDonHangKH = resultKhachHang._doc.SoDonHang + 1;
-          var SoDonHangDN = resultDoanhNghiep._doc.SoDonHang + 1;
-          var updateKH = { SoDonHang: soDonHangKH };
-          var updateDN = { SoDonHang: SoDonHangDN };
-          var id_Order = resultdonHang._id;
-          var resultRefund;
-          RefundPayment(id_Order, async function (error, refund) {
-            if (error) {
-              resultRefund = error;
-              res.status(400).send({
-                error: resultRefund,
-              });
-            } else {
-              resultRefund = refund;
-              await KhachHang.findOneAndUpdate({ _id: idKhachHang }, updateKH, {
+          var phuongThucThanhToan = resultdonHang._doc.ThanhToan;
+          if (phuongThucThanhToan == "PayPal") {
+            var idCongTy = resultdonHang._doc.id_DoanhNghiep;
+            var idKhachHang = resultdonHang._doc.id_KhachHang;
+            var resultKhachHang = await KhachHang.findOne({ _id: idKhachHang });
+            var resultDoanhNghiep = await DoanhNghiep.findOne({
+              _id: idCongTy,
+            });
+            var soDonHangKH = resultKhachHang._doc.SoDonHang + 1;
+            var SoDonHangDN = resultDoanhNghiep._doc.SoDonHang + 1;
+            var updateKH = { SoDonHang: soDonHangKH };
+            var updateDN = { SoDonHang: SoDonHangDN };
+            var id_Order = resultdonHang._id;
+            var resultRefund;
+            RefundPayment(id_Order, async function (error, refund) {
+              if (error) {
+                resultRefund = error;
+                res.status(400).send({
+                  error: resultRefund,
+                });
+              } else {
+                resultRefund = refund;
+                await KhachHang.findOneAndUpdate(
+                  { _id: idKhachHang },
+                  updateKH,
+                  {
+                    new: true,
+                  }
+                );
+                await DoanhNghiep.findOneAndUpdate(
+                  { _id: idCongTy },
+                  updateDN,
+                  {
+                    new: true,
+                  }
+                );
+                var resultOrder = await Order.findOneAndUpdate(
+                  { _id: idDonHangKhachHang },
+                  update,
+                  {
+                    new: true,
+                  }
+                );
+                res.status(200).send({
+                  data: resultOrder,
+                  refund: resultRefund,
+                  error: "null",
+                });
+              }
+            });
+          } else {
+            var idCongTy = resultdonHang._doc.id_DoanhNghiep;
+            var idKhachHang = resultdonHang._doc.id_KhachHang;
+            var resultKhachHang = await KhachHang.findOne({ _id: idKhachHang });
+            var resultDoanhNghiep = await DoanhNghiep.findOne({
+              _id: idCongTy,
+            });
+            var soDonHangKH = resultKhachHang._doc.SoDonHang + 1;
+            var SoDonHangDN = resultDoanhNghiep._doc.SoDonHang + 1;
+            var updateKH = { SoDonHang: soDonHangKH };
+            var updateDN = { SoDonHang: SoDonHangDN };
+            var id_Order = resultdonHang._id;
+            await KhachHang.findOneAndUpdate({ _id: idKhachHang }, updateKH, {
+              new: true,
+            });
+            await DoanhNghiep.findOneAndUpdate({ _id: idCongTy }, updateDN, {
+              new: true,
+            });
+            var resultOrder = await Order.findOneAndUpdate(
+              { _id: idDonHangKhachHang },
+              update,
+              {
                 new: true,
-              });
-              await DoanhNghiep.findOneAndUpdate({ _id: idCongTy }, updateDN, {
-                new: true,
-              });
-              var resultOrder = await Order.findOneAndUpdate(
-                { _id: idDonHangKhachHang },
-                update,
-                {
-                  new: true,
-                }
-              );
-              res.status(200).send({
-                data: resultOrder,
-                refund: resultRefund,
-                error: "null",
-              });
-            }
-          });
+              }
+            );
+            res.status(200).send({
+              data: resultOrder,
+              error: "null",
+            });
+          }
         } else {
           res.status(404).send({
             data: "",
@@ -908,7 +951,7 @@ class KhachHangController {
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "KHACHHANG") {
-          var resultAddr = await DiaChi.find({ id_account:_id });
+          var resultAddr = await DiaChi.find({ id_account: _id });
           res.status(200).send({
             data: resultAddr,
             error: "null",
@@ -942,7 +985,7 @@ class KhachHangController {
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "KHACHHANG") {
-          var user = await KhachHang.findOne({id_account: _id});
+          var user = await KhachHang.findOne({ id_account: _id });
           var idKhachHang = user._doc._id;
           var resultOrder = await Order.find({ id_KhachHang: idKhachHang });
           res.status(200).send({
@@ -965,6 +1008,75 @@ class KhachHangController {
       res.status(500).send({
         data: "",
         error: error,
+      });
+    }
+  }
+  //Get customers/show-shipping-package
+  async ShowShippingPackage(req, res, next) {
+    try {
+      const shippingPackage = await GoiVanChuyen.find({ Status: "ACTIVE" });
+      var mangShippingPackage = [];
+      mangShippingPackage = shippingPackage;
+      if (mangShippingPackage.length != 0) {
+        for (let i = 0; i < mangShippingPackage.length; i++) {
+          var _idLoaiHangHoa = mangShippingPackage[i]._doc.IdLoaiHangHoa;
+          var productType = await LoaiHangHoa.findOne({ _id: _idLoaiHangHoa });
+          var tenHangHoa = productType._doc.LoaiHangHoa;
+          mangShippingPackage[i]._doc.LoaiHangHoa = tenHangHoa;
+        }
+        res.status(200).send({
+          data: mangShippingPackage,
+        });
+      } else {
+        res.status(200).send({
+          data: mangShippingPackage,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        data: error,
+        error: "Internal Server Error",
+      });
+    }
+  }
+
+  //Get customers/show-discount-user
+  async ShowDiscount(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var resultTK = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
+      if (resultTK != null) {
+        var resultUser = await KhachHang.findOne({
+          id_account: resultTK._doc._id,
+        });
+        var ngayHienTai = new Date();
+        ngayHienTai.setDate(ngayHienTai.getDate());
+        console.log(resultUser);
+        var ngayHetHan = resultUser._doc.NgayHetHan;
+        var soDonHangHienTai = resultUser._doc.SoDonHang;
+        var giamGia = 0;
+        if (ngayHetHan >= ngayHienTai && soDonHangHienTai > 0) {
+          giamGia = resultUser._doc.GiamGia;
+        } else {
+          giamGia = 0;
+        }
+
+        res.status(200).send({
+          data: giamGia,
+        });
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        data: error,
+        error: "Internal Server Error",
       });
     }
   }

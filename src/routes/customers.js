@@ -12,6 +12,9 @@ router.post("/create_payment_vnpayurl", khachhangController.CreatePaymentVnpayur
 router.post("/create_payment_vnpayurl_package", khachhangController.CreatePaymentVnpayurlPackage);
 router.get("/show_diachi", khachhangController.showDiaChi);
 router.get("/show-order", khachhangController.ShowOrder);
+router.get("/show-shipping-package", khachhangController.ShowShippingPackage);
+router.get("/show-discount-user", khachhangController.ShowDiscount);
+
 
 
 module.exports = router;
