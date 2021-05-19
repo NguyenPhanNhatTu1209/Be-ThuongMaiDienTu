@@ -54,8 +54,8 @@ function paymentMethod(price, idDonHang, next) {
       payment_method: "paypal",
     },
     redirect_urls: {
-      return_url: `http:///localhost:3000/me/success?price=${price}&idDonHang=${idDonHang}`,
-      cancel_url: "http://localhost:3000/me/cancel",
+      return_url: `http://54.255.93.14/me/success?price=${price}&idDonHang=${idDonHang}`,
+      cancel_url: "http://54.255.93.14/me/cancel",
     },
     transactions: [
       {
@@ -90,8 +90,8 @@ function paymentMethodPackage(price, idDonHang, next) {
       payment_method: "paypal",
     },
     redirect_urls: {
-      return_url: `http:///localhost:3000/me/successPackageBill?price=${price}&idDonHang=${idDonHang}`,
-      cancel_url: "http://localhost:3000/me/cancelPackageBill",
+      return_url: `http://54.255.93.14/me/successPackageBill?price=${price}&idDonHang=${idDonHang}`,
+      cancel_url: "http://54.255.93.14/me/cancelPackageBill",
     },
     transactions: [
       {
