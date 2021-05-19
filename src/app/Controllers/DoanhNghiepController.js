@@ -164,20 +164,7 @@ class DoanhNghiepController {
       });
     }
   }
-  //Get enterprises/show-shipping-package
-  async ShowShippingPackage(req, res, next) {
-    try {
-      const shippingPackage = await GoiVanChuyen.find({ Status: "ACTIVE" });
-      res.status(200).send({
-        data: shippingPackage,
-      });
-    } catch (error) {
-      res.status(500).send({
-        data: error,
-        error: "Internal Server Error",
-      });
-    }
-  }
+  
   //Get enterprises/show-shipping-package-by-enterprise
   async ShowShippingPackageByEnterprise(req, res, next) {
     try {
@@ -467,7 +454,7 @@ class DoanhNghiepController {
           var thongKeDonHang = await Order.find({
             id_DoanhNghiep: idCongTy,
             updatedAt: { $gte: ngayXet },
-            ThanhToan: "Đã Thanh Toán",
+            $or:[{ThanhToan: "PayPal"},{ThanhToan: "VnPay"}],
             TrangThai: "Đã Nhận Hàng",
           });
           var tongTien = 0;
@@ -598,7 +585,7 @@ class DoanhNghiepController {
           var thongKeDonHang = await Order.find({
             id_DoanhNghiep: idCongTy,
             updatedAt: { $gte: ngayXet },
-            ThanhToan: "Đã Thanh Toán",
+            $or:[{ThanhToan: "PayPal"},{ThanhToan: "VnPay"}],
             TrangThai: "Đã Nhận Hàng",
           });
           var soDonHangThang1 = 0;
@@ -739,7 +726,7 @@ class DoanhNghiepController {
           var thongKeDonHang = await Order.find({
             id_DoanhNghiep: idCongTy,
             updatedAt: { $gte: ngayXet },
-            ThanhToan: "Đã Thanh Toán",
+            $or:[{ThanhToan: "PayPal"},{ThanhToan: "VnPay"}],
             TrangThai: "Đã Nhận Hàng",
           });
           var soDonHangThang1 = 0;
@@ -768,6 +755,7 @@ class DoanhNghiepController {
           var soTienThang12 = 0;
           var soNam = ngayHienTai.getFullYear();
           for (var i = 0; i < thongKeDonHang.length; i++) {
+            console.log(thongKeDonHang[i]._doc);
             var chiPhi = parseFloat(thongKeDonHang[i]._doc.TongChiPhi);
             var checkThang = thongKeDonHang[i]._doc.updatedAt.getMonth();
             var checkNam = thongKeDonHang[i]._doc.updatedAt.getFullYear();
