@@ -229,7 +229,7 @@ class MeController {
     const paymentId = req.query.paymentId;
     const price = req.query.price;
     const idDonHang = req.query.idDonHang;
-    var update = { ThanhToan: "Đã Thanh Toán" };
+    var update = { ThanhToan: "PayPal" };
     const execute_payment_json = {
       payer_id: payerId,
       transactions: [
@@ -278,7 +278,7 @@ class MeController {
       const paymentId = req.query.paymentId;
       const price = req.query.price;
       const idDonHang = req.query.idDonHang;
-      var update = { ThanhToan: "Đã Thanh Toán" };
+      var update = { ThanhToan: "PayPal" };
       const execute_payment_json = {
         payer_id: payerId,
         transactions: [
@@ -330,9 +330,6 @@ class MeController {
                 SoDonHang,
                 GiamGia,
               };
-              var resultKH = await KhachHang.findOne({
-                _id: donHangDichVu._doc.id_KhachHang,
-              });
               await KhachHang.findOneAndUpdate(
                 { _id: donHangDichVu._doc.id_KhachHang },
                 updateKH,
@@ -447,7 +444,7 @@ class MeController {
       await Order.findOneAndUpdate(
         { _id: id },
         {
-          ThanhToan: "Đã Thanh Toán",
+          ThanhToan: "VnPay",
         },
         {
           new: true,
@@ -490,7 +487,7 @@ class MeController {
       var donHangDichVu = await DonHangDichVu.findOneAndUpdate(
         { _id: id },
         {
-          ThanhToan: "Đã Thanh Toán",
+          ThanhToan: "VnPay",
         },
         {
           new: true,
