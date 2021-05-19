@@ -11,5 +11,7 @@ router.post("/create-bill-package", khachhangController.CreateBillPackage);
 router.post("/create_payment_vnpayurl", khachhangController.CreatePaymentVnpayurl);
 router.post("/create_payment_vnpayurl_package", khachhangController.CreatePaymentVnpayurlPackage);
 router.get("/show_diachi", khachhangController.showDiaChi);
+router.get("/show-order", khachhangController.ShowOrder);
+
 
 module.exports = router;
