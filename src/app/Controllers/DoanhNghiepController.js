@@ -164,7 +164,7 @@ class DoanhNghiepController {
       });
     }
   }
-  
+
   //Get enterprises/show-shipping-package-by-enterprise
   async ShowShippingPackageByEnterprise(req, res, next) {
     try {
@@ -176,11 +176,27 @@ class DoanhNghiepController {
       if (IdCongTy != null) {
         const shippingPackage = await GoiVanChuyen.find({
           IdCongTy,
-          Status: "ACTIVE",
+          Status: "ACTIVE"
         });
-        res.status(200).send({
-          data: shippingPackage,
-        });
+        var mangShippingPackage = [];
+        mangShippingPackage = shippingPackage;
+        if (mangShippingPackage.length != 0) {
+          for (let i = 0; i < mangShippingPackage.length; i++) {
+            var _idLoaiHangHoa = mangShippingPackage[i]._doc.IdLoaiHangHoa;
+            var productType = await LoaiHangHoaSanPham.findOne({
+              _id: _idLoaiHangHoa,
+            });
+            var tenHangHoa = productType._doc.LoaiHangHoa;
+            mangShippingPackage[i]._doc.LoaiHangHoa = tenHangHoa;
+          }
+          res.status(200).send({
+            data: mangShippingPackage,
+          });
+        } else {
+          res.status(200).send({
+            data: mangShippingPackage,
+          });
+        }
       } else {
         res.status(400).send({
           data: "",
@@ -188,6 +204,7 @@ class DoanhNghiepController {
         });
       }
     } catch (error) {
+      console.log(error);
       res.status(500).send({
         data: error,
         error: "Internal Server Error",
@@ -454,7 +471,7 @@ class DoanhNghiepController {
           var thongKeDonHang = await Order.find({
             id_DoanhNghiep: idCongTy,
             updatedAt: { $gte: ngayXet },
-            $or:[{ThanhToan: "PayPal"},{ThanhToan: "VnPay"}],
+            $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],
             TrangThai: "Đã Nhận Hàng",
           });
           var tongTien = 0;
@@ -585,7 +602,7 @@ class DoanhNghiepController {
           var thongKeDonHang = await Order.find({
             id_DoanhNghiep: idCongTy,
             updatedAt: { $gte: ngayXet },
-            $or:[{ThanhToan: "PayPal"},{ThanhToan: "VnPay"}],
+            $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],
             TrangThai: "Đã Nhận Hàng",
           });
           var soDonHangThang1 = 0;
@@ -726,7 +743,7 @@ class DoanhNghiepController {
           var thongKeDonHang = await Order.find({
             id_DoanhNghiep: idCongTy,
             updatedAt: { $gte: ngayXet },
-            $or:[{ThanhToan: "PayPal"},{ThanhToan: "VnPay"}],
+            $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],
             TrangThai: "Đã Nhận Hàng",
           });
           var soDonHangThang1 = 0;
