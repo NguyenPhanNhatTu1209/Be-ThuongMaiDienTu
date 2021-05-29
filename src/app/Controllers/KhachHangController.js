@@ -1080,6 +1080,121 @@ class KhachHangController {
       });
     }
   }
+  // customers/show-cost
+  async ShowCost(req, res, next) {
+    try {
+      var {
+        GiamGia,
+        TongChiPhi,
+        id_KhachHang,
+        id_DoanhNghiep,
+        id_GoiShipping,
+      } = req.body;
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var update = {
+        GiamGia,
+        TongChiPhi,
+        id_KhachHang,
+        id_DoanhNghiep,
+        id_GoiShipping,
+      };
+      var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "KHACHHANG") {
+          var resultKH = await KhachHang.findOne({ id_account: _id });
+          var resultGoiShipping = await GoiVanChuyen.findOne({
+            _id: update.id_GoiShipping,
+          });
+          var resultLoaiHangHoa = await LoaiHangHoaSanPham.findOne({
+            _id: resultGoiShipping._doc.IdLoaiHangHoa,
+          });
+          var giamGiaTaiKhoan = resultKH._doc.GiamGia;
+          var giamGiaShipping = resultGoiShipping._doc.KhuyenMai;
+          var khoiLuongBatBuoc = resultLoaiHangHoa.SoKy;
+          update.id_KhachHang = resultKH._doc._id;
+          update.id_DoanhNghiep = resultGoiShipping._doc.IdCongTy;
+          var ngayHetHanGoiKhachHang = resultKH._doc.NgayHetHan;
+          var ngayThucTai = Date.now();
+          var soLuongDonHangGoiKhachHang = resultKH._doc.SoDonHang;
+          if (
+            update.KhoiLuong > resultKH._doc.KhoiLuongToiDa ||
+            ngayThucTai > ngayHetHanGoiKhachHang ||
+            soLuongDonHangGoiKhachHang == 0
+          ) {
+            if (update.KhoiLuong > khoiLuongBatBuoc) {
+              res.status(400).send({
+                data: "",
+                error: "Gói vận chuyển này không thích hợp với số ký",
+              });
+            } else {
+              giamGiaTaiKhoan = 0;
+              update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
+              var tongGiaChuaGiam = resultGoiShipping._doc.ChiPhi;
+              var soTienGiamDuocDoGoi = 0;
+              var SoTienGiamDuocDoDoanhNghiep;
+              var tongGiamgia = update.GiamGia;
+              var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
+              SoTienGiamDuocDoDoanhNghiep = 0 - (chiPhiVanChuyen*giamGiaShipping)/100;
+              chiPhiVanChuyen =
+                chiPhiVanChuyen - (chiPhiVanChuyen * tongGiamgia) / 100;
+              var resultCost ={};
+              resultCost.TongGiaChuaGiam = tongGiaChuaGiam.toString();
+              resultCost.SoTienGiamDuocDoGoi = soTienGiamDuocDoGoi.toString();
+              resultCost.SoTienGiamDuocDoDoanhNghiep = SoTienGiamDuocDoDoanhNghiep.toString();
+              resultCost.TongChiPhi = chiPhiVanChuyen.toString();
+              res.status(200).send({
+                data: resultCost,
+                error: "null",
+              });
+            }
+          } else {
+            if (update.KhoiLuong > khoiLuongBatBuoc) {
+              res.status(400).send({
+                data: "",
+                error: "Gói vận chuyển này không thích hợp với số ký",
+              });
+            } else {
+              update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
+              var tongGiaChuaGiam = resultGoiShipping._doc.ChiPhi;
+              var soTienGiamDuocDoGoi = 0;
+              var SoTienGiamDuocDoDoanhNghiep;
+              var tongGiamgia = update.GiamGia;
+              var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
+              SoTienGiamDuocDoDoanhNghiep = 0 - (chiPhiVanChuyen*giamGiaShipping)/100;
+              soTienGiamDuocDoGoi = 0 - (chiPhiVanChuyen*giamGiaTaiKhoan)/100;
+              chiPhiVanChuyen =
+              parseFloat(chiPhiVanChuyen - (chiPhiVanChuyen * tongGiamgia) / 100);
+              var resultCost ={};
+              resultCost.TongGiaChuaGiam = tongGiaChuaGiam.toString();
+              resultCost.SoTienGiamDuocDoGoi = soTienGiamDuocDoGoi.toString();
+              resultCost.SoTienGiamDuocDoDoanhNghiep = SoTienGiamDuocDoDoanhNghiep.toString();
+              resultCost.TongChiPhi = chiPhiVanChuyen.toString();
+              res.status(200).send({
+                data: resultCost,
+                error: "null",
+              });
+            }
+          }
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        error: error,
+      });
+    }
+  }
 }
 
 module.exports = new KhachHangController();
