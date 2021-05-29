@@ -14,7 +14,7 @@ router.get("/show_diachi", khachhangController.showDiaChi);
 router.get("/show-order", khachhangController.ShowOrder);
 router.get("/show-shipping-package", khachhangController.ShowShippingPackage);
 router.get("/show-discount-user", khachhangController.ShowDiscount);
-
+router.get("/show-cost", khachhangController.ShowCost);
 
 
 module.exports = router;
