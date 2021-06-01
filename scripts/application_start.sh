@@ -1,5 +1,3 @@
-#!/bin/bash
-
 # Give permission for everything in the express-app directory
 sudo chmod -R 777 /home/ubuntu/file/ec-2021
 sudo chmod -R 777 /home/ubuntu/file/ec-2021/dist
