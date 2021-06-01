@@ -1020,8 +1020,12 @@ class KhachHangController {
       if (mangShippingPackage.length != 0) {
         for (let i = 0; i < mangShippingPackage.length; i++) {
           var _idLoaiHangHoa = mangShippingPackage[i]._doc.IdLoaiHangHoa;
-          var productType = await LoaiHangHoa.findOne({ _id: _idLoaiHangHoa });
+          var productType = await LoaiHangHoa.findOne({ _id: _idLoaiHangHoa});
           var tenHangHoa = productType._doc.LoaiHangHoa;
+          var _idCongTy = mangShippingPackage[i]._doc.IdCongTy;
+          var congTy = await DoanhNghiep.findOne({ _id: _idCongTy});
+          mangShippingPackage[i]._doc.TenDoanhNghiep = congTy.TenDoanhNghiep;
+          mangShippingPackage[i]._doc.Logo = congTy.Logo;
           mangShippingPackage[i]._doc.LoaiHangHoa = tenHangHoa;
         }
         res.status(200).send({
@@ -1083,22 +1087,16 @@ class KhachHangController {
   // customers/show-cost
   async ShowCost(req, res, next) {
     try {
-      var {
-        GiamGia,
-        TongChiPhi,
-        id_KhachHang,
-        id_DoanhNghiep,
-        id_GoiShipping,
-      } = req.body;
+      var KhoiLuong = req.query.KhoiLuong;
+      var id_GoiShipping = req.query.id_GoiShipping;
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
       var update = {
-        GiamGia,
-        TongChiPhi,
-        id_KhachHang,
-        id_DoanhNghiep,
+        KhoiLuong,
         id_GoiShipping,
       };
+      console.log(update.KhoiLuong);
+      console.log(update.id_GoiShipping);
       var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
       if (result != null) {
         const roleDT = result.Role;
@@ -1190,6 +1188,7 @@ class KhachHangController {
         });
       }
     } catch (error) {
+      console.log(error);
       res.status(500).send({
         error: error,
       });
