@@ -371,7 +371,7 @@ class DoanhNghiepController {
               "http://api.currencylayer.com/live?access_key=0439c3cc10ac72fa45229f54047c1df4&format=1"
             );
             var datausdToVND = await usdToVND.json();
-            var VND = datausdToVND.quotes.USDVND;
+            var VND = parseFloat(datausdToVND.quotes.USDVND);
             console.log(VND);
             var tienDo = chiPhi / VND;
             var formatDollar = FormatDollar(tienDo);
