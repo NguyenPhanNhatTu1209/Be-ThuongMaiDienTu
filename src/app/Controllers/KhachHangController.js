@@ -8,6 +8,7 @@ const DonHangDichVu = require("../Models/DonHangDichVu");
 const GoiVanChuyen = require("../Models/GoiVanChuyen");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
 const DiaChi = require("../Models/DiaChi");
+const fetch = require('node-fetch');
 const {
   verifyToken,
   Payment,
@@ -117,7 +118,13 @@ class KhachHangController {
               var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
               chiPhiVanChuyen =
                 chiPhiVanChuyen - (chiPhiVanChuyen * tongGiamgia) / 100;
-              var tienDo = chiPhiVanChuyen / 23050;
+              const usdToVND = await fetch(
+                "http://api.currencylayer.com/live?access_key=0439c3cc10ac72fa45229f54047c1df4&format=1"
+              );
+              var datausdToVND = await usdToVND.json();
+              var VND = datausdToVND.quotes.USDVND;
+              console.log(VND);
+              var tienDo = chiPhi / VND;
               var formatDollar = FormatDollar(tienDo);
               update.TongChiPhi = chiPhiVanChuyen.toString();
               var resultOrder = await Order.create(update);
@@ -180,7 +187,13 @@ class KhachHangController {
               var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
               chiPhiVanChuyen =
                 chiPhiVanChuyen - (chiPhiVanChuyen * tongGiamgia) / 100;
-              var tienDo = chiPhiVanChuyen / 23050;
+              const usdToVND = await fetch(
+                "http://api.currencylayer.com/live?access_key=0439c3cc10ac72fa45229f54047c1df4&format=1"
+              );
+              var datausdToVND = await usdToVND.json();
+              var VND = datausdToVND.quotes.USDVND;
+              console.log(VND);
+              var tienDo = chiPhi / VND;
               var formatDollar = FormatDollar(tienDo);
               update.TongChiPhi = String(chiPhiVanChuyen);
               var resultOrder = await Order.create(update);
@@ -446,7 +459,13 @@ class KhachHangController {
             var resultKH = await KhachHang.findOne({ id_account: _id });
             update.id_KhachHang = resultKH._doc._id;
             var chiPhi = parseFloat(update.ChiPhi);
-            var tienDo = chiPhi / 23050;
+            const usdToVND = await fetch(
+              "http://api.currencylayer.com/live?access_key=0439c3cc10ac72fa45229f54047c1df4&format=1"
+            );
+            var datausdToVND = await usdToVND.json();
+            var VND = datausdToVND.quotes.USDVND;
+            console.log(VND);
+            var tienDo = chiPhi / VND;
             var formatDollar = FormatDollar(tienDo);
             var resultBillPackage = await DonHangDichVu.create(update);
             var idDonHangMoiTao = resultBillPackage._doc._id;
@@ -1020,10 +1039,10 @@ class KhachHangController {
       if (mangShippingPackage.length != 0) {
         for (let i = 0; i < mangShippingPackage.length; i++) {
           var _idLoaiHangHoa = mangShippingPackage[i]._doc.IdLoaiHangHoa;
-          var productType = await LoaiHangHoa.findOne({ _id: _idLoaiHangHoa});
+          var productType = await LoaiHangHoa.findOne({ _id: _idLoaiHangHoa });
           var tenHangHoa = productType._doc.LoaiHangHoa;
           var _idCongTy = mangShippingPackage[i]._doc.IdCongTy;
-          var congTy = await DoanhNghiep.findOne({ _id: _idCongTy});
+          var congTy = await DoanhNghiep.findOne({ _id: _idCongTy });
           mangShippingPackage[i]._doc.TenDoanhNghiep = congTy.TenDoanhNghiep;
           mangShippingPackage[i]._doc.Logo = congTy.Logo;
           mangShippingPackage[i]._doc.LoaiHangHoa = tenHangHoa;
@@ -1134,10 +1153,11 @@ class KhachHangController {
               var SoTienGiamDuocDoDoanhNghiep;
               var tongGiamgia = update.GiamGia;
               var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
-              SoTienGiamDuocDoDoanhNghiep = 0 - (chiPhiVanChuyen*giamGiaShipping)/100;
+              SoTienGiamDuocDoDoanhNghiep =
+                0 - (chiPhiVanChuyen * giamGiaShipping) / 100;
               chiPhiVanChuyen =
                 chiPhiVanChuyen - (chiPhiVanChuyen * tongGiamgia) / 100;
-              var resultCost ={};
+              var resultCost = {};
               resultCost.TongGiaChuaGiam = tongGiaChuaGiam.toString();
               resultCost.SoTienGiamDuocDoGoi = soTienGiamDuocDoGoi.toString();
               resultCost.SoTienGiamDuocDoDoanhNghiep = SoTienGiamDuocDoDoanhNghiep.toString();
@@ -1160,11 +1180,14 @@ class KhachHangController {
               var SoTienGiamDuocDoDoanhNghiep;
               var tongGiamgia = update.GiamGia;
               var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
-              SoTienGiamDuocDoDoanhNghiep = 0 - (chiPhiVanChuyen*giamGiaShipping)/100;
-              soTienGiamDuocDoGoi = 0 - (chiPhiVanChuyen*giamGiaTaiKhoan)/100;
-              chiPhiVanChuyen =
-              parseFloat(chiPhiVanChuyen - (chiPhiVanChuyen * tongGiamgia) / 100);
-              var resultCost ={};
+              SoTienGiamDuocDoDoanhNghiep =
+                0 - (chiPhiVanChuyen * giamGiaShipping) / 100;
+              soTienGiamDuocDoGoi =
+                0 - (chiPhiVanChuyen * giamGiaTaiKhoan) / 100;
+              chiPhiVanChuyen = parseFloat(
+                chiPhiVanChuyen - (chiPhiVanChuyen * tongGiamgia) / 100
+              );
+              var resultCost = {};
               resultCost.TongGiaChuaGiam = tongGiaChuaGiam.toString();
               resultCost.SoTienGiamDuocDoGoi = soTienGiamDuocDoGoi.toString();
               resultCost.SoTienGiamDuocDoDoanhNghiep = SoTienGiamDuocDoDoanhNghiep.toString();

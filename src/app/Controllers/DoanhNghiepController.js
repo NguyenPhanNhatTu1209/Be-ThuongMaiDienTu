@@ -3,6 +3,7 @@ const GoiVanChuyen = require("../Models/GoiVanChuyen");
 const TaiKhoan = require("../Models/TaiKhoan");
 const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
+const fetch = require('node-fetch');
 const {
   verifyToken,
   paymentMethodPackage,
@@ -176,7 +177,7 @@ class DoanhNghiepController {
       if (IdCongTy != null) {
         const shippingPackage = await GoiVanChuyen.find({
           IdCongTy,
-          Status: "ACTIVE"
+          Status: "ACTIVE",
         });
         var mangShippingPackage = [];
         mangShippingPackage = shippingPackage;
@@ -366,7 +367,13 @@ class DoanhNghiepController {
             var resultDN = await DoanhNghiep.findOne({ id_account: _id });
             update.id_DoanhNghiep = resultDN._doc._id;
             var chiPhi = parseFloat(update.ChiPhi);
-            var tienDo = chiPhi / 23050;
+            const usdToVND = await fetch(
+              "http://api.currencylayer.com/live?access_key=0439c3cc10ac72fa45229f54047c1df4&format=1"
+            );
+            var datausdToVND = await usdToVND.json();
+            var VND = datausdToVND.quotes.USDVND;
+            console.log(VND);
+            var tienDo = chiPhi / VND;
             var formatDollar = FormatDollar(tienDo);
             var resultBillPackage = await DonHangDichVu.create(update);
             var idDonHangMoiTao = resultBillPackage._doc._id;
