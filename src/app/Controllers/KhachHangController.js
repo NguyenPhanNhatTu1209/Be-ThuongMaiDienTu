@@ -1007,7 +1007,7 @@ class KhachHangController {
         if (roleDT == "KHACHHANG") {
           var user = await KhachHang.findOne({ id_account: _id });
           var idKhachHang = user._doc._id;
-          var resultOrder = await Order.find({ id_KhachHang: idKhachHang });
+          var resultOrder = await Order.find({ id_KhachHang: idKhachHang }).sort({createdAt: -1});
           res.status(200).send({
             data: resultOrder,
             error: "null",

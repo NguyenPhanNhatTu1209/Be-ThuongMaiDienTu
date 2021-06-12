@@ -466,7 +466,7 @@ class AdminController {
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "ADMIN") {
-          var resultDN = await DoanhNghiep.find({});
+          var resultDN = await DoanhNghiep.find({}).sort({createdAt: -1});
           res.status(200).send({
             data: resultDN,
           });
@@ -498,7 +498,7 @@ class AdminController {
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "ADMIN") {
-          var resultDN = await DoanhNghiep.find({ TrangThai: "INACTIVE" });
+          var resultDN = await DoanhNghiep.find({ TrangThai: "INACTIVE" }).sort({createdAt: -1});
           res.status(200).send({
             data: resultDN,
           });
