@@ -169,8 +169,9 @@ class DoanhNghiepController {
   //Get enterprises/show-shipping-package-by-enterprise
   async ShowShippingPackageByEnterprise(req, res, next) {
     try {
-      const token = req.get("Authorization").replace("Bearer ", "");
+      var token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
+      console.log(_id);
       const IdCongTy = (
         await DoanhNghiep.findOne({ id_account: _id, TrangThai: "ACTIVE" })
       )._id;
@@ -224,7 +225,7 @@ class DoanhNghiepController {
       if (IdCongTy != null) {
         const donHang = await Order.find({
           id_DoanhNghiep: IdCongTy,
-        });
+        }).sort({createdAt: -1});
         res.status(200).send({
           data: donHang,
         });
@@ -919,38 +920,6 @@ class DoanhNghiepController {
     }
   }
 
-  //get enterprises/show-product-type
-  async ShowProductType(req, res, next) {
-    try {
-      const token = req.get("Authorization").replace("Bearer ", "");
-      const _id = await verifyToken(token);
-      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
-      if (result != null) {
-        const roleDT = result.Role;
-        if (roleDT == "DOANHNGHIEP") {
-          var resultLoaiSanPham = await LoaiHangHoaSanPham.find();
-          res.status(200).send({
-            data: resultLoaiSanPham,
-          });
-        } else {
-          res.status(404).send({
-            data: "",
-            error: "No Authentication",
-          });
-        }
-      } else {
-        res.status(404).send({
-          data: "",
-          error: "Not found user!",
-        });
-      }
-    } catch (error) {
-      res.status(500).send({
-        data: "",
-        error: error,
-      });
-    }
-  }
   // Post customers/create_payment_vnpayurl_package
   async CreatePaymentVnpayurlPackage(req, res, next) {
     try {
