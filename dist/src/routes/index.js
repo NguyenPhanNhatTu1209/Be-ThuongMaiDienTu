@@ -9,5 +9,7 @@ function route(app) {
   app.use("/auth", accountsRouter);
   app.use("/me", meRouter);
   app.use("/admin", adminRouter);
+
+  app.get("/api/info", (req, res) => res.send("Welcome to EC18B010 - Tu fix aws"));
 }
 module.exports = route;

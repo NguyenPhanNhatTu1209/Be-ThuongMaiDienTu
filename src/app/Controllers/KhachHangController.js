@@ -55,6 +55,7 @@ class KhachHangController {
         GiamGia,
         TongChiPhi,
         ThanhToan,
+        TienGiamGia,
         id_KhachHang,
         id_DoanhNghiep,
         id_GoiShipping,
@@ -73,6 +74,7 @@ class KhachHangController {
         GiamGia,
         TongChiPhi,
         ThanhToan,
+        TienGiamGia,
         id_KhachHang,
         id_DoanhNghiep,
         id_GoiShipping,
@@ -113,6 +115,7 @@ class KhachHangController {
               });
             } else {
               giamGiaTaiKhoan = 0;
+              var tienGiamGia = "0";
               update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
               var tongGiamgia = update.GiamGia;
               var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
@@ -127,6 +130,7 @@ class KhachHangController {
               var tienDo = chiPhiVanChuyen / VND;
               var formatDollar = FormatDollar(tienDo);
               update.TongChiPhi = chiPhiVanChuyen.toString();
+              update.TienGiamGia = tienGiamGia;
               var resultOrder = await Order.create(update);
               var idDonHangMoiTao = resultOrder._doc._id;
               var resultPayment;
@@ -185,6 +189,8 @@ class KhachHangController {
               update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
               var tongGiamgia = update.GiamGia;
               var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
+              var tienGiamGia = chiPhiVanChuyen*giamGiaTaiKhoan/100;
+              update.TienGiamGia = tienGiamGia.toString();
               chiPhiVanChuyen =
                 chiPhiVanChuyen - (chiPhiVanChuyen * tongGiamgia) / 100;
               const usdToVND = await fetch(
@@ -536,6 +542,7 @@ class KhachHangController {
         GiamGia,
         TongChiPhi,
         ThanhToan,
+        TienGiamGia,
         id_KhachHang,
         id_DoanhNghiep,
         id_GoiShipping,
@@ -554,6 +561,7 @@ class KhachHangController {
         GiamGia,
         TongChiPhi,
         ThanhToan,
+        TienGiamGia,
         id_KhachHang,
         id_DoanhNghiep,
         id_GoiShipping,
@@ -594,6 +602,8 @@ class KhachHangController {
               });
             } else {
               giamGiaTaiKhoan = 0;
+              var tienGiamGia = "0";
+              update.TienGiamGia = tienGiamGia;
               update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
               var tongGiamgia = update.GiamGia;
               var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
@@ -700,6 +710,8 @@ class KhachHangController {
               update.GiamGia = giamGiaTaiKhoan + giamGiaShipping;
               var tongGiamgia = update.GiamGia;
               var chiPhiVanChuyen = parseFloat(resultGoiShipping._doc.ChiPhi);
+              var tienGiamGia = chiPhiVanChuyen*giamGiaTaiKhoan/100;
+              update.TienGiamGia = tienGiamGia;
               chiPhiVanChuyen =
                 chiPhiVanChuyen - (chiPhiVanChuyen * tongGiamgia) / 100;
               console.log(chiPhiVanChuyen);
@@ -1000,7 +1012,6 @@ class KhachHangController {
     try {
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
-      var update = { TrangThai: "Đã Nhận Hàng" };
       var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
       if (result != null) {
         const roleDT = result.Role;

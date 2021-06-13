@@ -7,6 +7,9 @@ const DoanhNghiep = require("../Models/DoanhNghiep");
 const KhachHang = require("../Models/KhachHang");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
 const nodemailer = require("nodemailer");
+const DonHangDichVu = require("../Models/DonHangDichVu");
+const Order = require("../Models/Order");
+
 
 class AdminController {
   //Post admin/create-goikhachhang
@@ -753,6 +756,256 @@ class AdminController {
       });
     }
   }
+  //get admin/show-thongke-thang
+  async ShowThongKeThang(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var doanhnghiep = await DoanhNghiep.find({TrangThai: "ACTIVE"});
+          var resultThongKeDN = [];
+          var resultTong = {
+            TongTien: "",
+            TongTienGiam: "",
+            TongDonHang: "",
+            TongTienDuaDoanhNghiep: "",
+          }
+          var tienDoanhNghiep;
+          var tienGiamGia;
+          var soDonHang;
+          var tongTienDoanhNghiep = 0;
+          var tongTienGiamGia = 0;
+          var tongSoDonHang = 0;
+          var tienLayDoanhNghiep = 0;
+          var tienDuaDoanhNghiep = 0;
+          var ngayHienTai = new Date();
+          ngayHienTai.setDate(ngayHienTai.getDate());
+          var thanghientai = ngayHienTai.getMonth();
+          for(let i=0;i<doanhnghiep.length;i++)
+          {
+            tienDoanhNghiep=0;
+            tienGiamGia=0;
+            soDonHang=0;
+            tienLayDoanhNghiep=0;
+            tienDuaDoanhNghiep=0;
+            var IDDoanhNgiep = doanhnghiep[i]._doc._id;
+            var donHang = await Order.find({id_DoanhNghiep: IDDoanhNgiep, $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],TrangThai: "Đã Nhận Hàng"});
+            var updateDN ={
+              idDoanhNgiep: "",
+              TenDoanhNghiep: "",
+              TienDuaDoanhNghiep: "",
+              TienLayDoanhNghiep: "",
+              TienDoanhNghiep: "",
+              TienGiamGia: "",
+              SoDonHang: "",
+              LogoDoanhNghiep:"",
+            }
+            for(let j = 0;j<donHang.length;j++)
+            {
+              var checkThang = donHang[i]._doc.updatedAt.getMonth();
+              if(thanghientai==checkThang)
+              {
+                tienDoanhNghiep = parseFloat(donHang[j]._doc.TongChiPhi) + tienDoanhNghiep;
+                soDonHang++;
+                tienGiamGia = parseFloat(donHang[j]._doc.TienGiamGia) + tienGiamGia;
+              }
+            }
+            updateDN.idDoanhNgiep = IDDoanhNgiep;
+            updateDN.TienDoanhNghiep = tienDoanhNghiep.toString();
+            updateDN.TienGiamGia = tienGiamGia.toString();
+            updateDN.SoDonHang = soDonHang.toString();
+            updateDN.LogoDoanhNghiep = doanhnghiep[i]._doc.Logo;
+            updateDN.TenDoanhNghiep = doanhnghiep[i]._doc.TenDoanhNghiep;
+            tienDuaDoanhNghiep = tienDoanhNghiep+tienGiamGia;
+            tienLayDoanhNghiep = tienDuaDoanhNghiep*5/100;
+            updateDN.TienDuaDoanhNghiep = tienDuaDoanhNghiep.toString();
+            updateDN.TienLayDoanhNghiep = tienLayDoanhNghiep.toString();
+            tongTienDoanhNghiep = tongTienDoanhNghiep+tienDoanhNghiep;
+            tongSoDonHang = soDonHang+tongSoDonHang;
+            tongTienGiamGia = tongTienGiamGia + tienGiamGia;
+            resultThongKeDN[i] = updateDN;
+          }
+          resultTong.TongTien = tongTienDoanhNghiep.toString();
+          resultTong.TongTienGiam = tongTienGiamGia.toString();
+          resultTong.TongDonHang = tongSoDonHang.toString();
+          resultTong.TongTienDuaDoanhNghiep = (tongTienDoanhNghiep+tongTienGiamGia).toString();
+          var donHangDichVu = await DonHangDichVu.find({$or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }, {ThanhToan: "Đã Thanh Toán" }]});
+          var tienGoiDichVu = 0;
+          var soGoiDaMua = 0;
+          for(let i =0;i<donHangDichVu.length;i++)
+          {
+            var checkThang = donHangDichVu[i]._doc.updatedAt.getMonth();
+            if(checkThang == thanghientai)
+            {
+              tienGoiDichVu = parseFloat(donHangDichVu[i]._doc.ChiPhi)+tienGoiDichVu;
+              soGoiDaMua++;
+            }
+          }
+          var resultGoi = {
+            TienGoiDichVu: tienGoiDichVu.toString(),
+            SoGoiDaBan: soGoiDaMua.toString(),
+          }
+          var tongTatCaTien = tienGoiDichVu + tongTienDoanhNghiep + (tongTienDoanhNghiep+tongTienGiamGia)*5/100;
+          var tienLoi = tongTatCaTien - tongTienGiamGia - tongTienDoanhNghiep;
+          var resultTongTien = {
+            TongTatCaTien: tongTatCaTien.toString(),
+            TienLoi: tienLoi.toString(),
+          }
+          res.status(200).send({
+            dataDN: resultThongKeDN,
+            dataTongDN: resultTong,
+            dataGoi:resultGoi,
+            dataTongTien: resultTongTien,
+            error: "null",
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
+      }
+    } catch (error) {
+      console.log(error)
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
+    }
+  }
+ //get admin/show-thongke-thang-truoc
+ async ShowThongKeThangTruoc(req, res, next) {
+  try {
+    const token = req.get("Authorization").replace("Bearer ", "");
+    const _id = await verifyToken(token);
+    var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+    if (result != null) {
+      const roleDT = result.Role;
+      if (roleDT == "ADMIN") {
+        var doanhnghiep = await DoanhNghiep.find({TrangThai: "ACTIVE"});
+        var resultThongKeDN = [];
+        var resultTong = {
+          TongTien: "",
+          TongTienGiam: "",
+          TongDonHang: "",
+          TongTienDuaDoanhNghiep: "",
+        }
+        var tienDoanhNghiep;
+        var tienGiamGia;
+        var soDonHang;
+        var tongTienDoanhNghiep = 0;
+        var tongTienGiamGia = 0;
+        var tongSoDonHang = 0;
+        var tienLayDoanhNghiep = 0;
+        var tienDuaDoanhNghiep = 0;
+        var ngayHienTai = new Date();
+        ngayHienTai.setDate(ngayHienTai.getDate());
+        var thanghientai = ngayHienTai.getMonth() -1;
+        for(let i=0;i<doanhnghiep.length;i++)
+        {
+          tienDoanhNghiep=0;
+          tienGiamGia=0;
+          soDonHang=0;
+          tienLayDoanhNghiep=0;
+          tienDuaDoanhNghiep=0;
+          var IDDoanhNgiep = doanhnghiep[i]._doc._id;
+          var donHang = await Order.find({id_DoanhNghiep: IDDoanhNgiep, $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],TrangThai: "Đã Nhận Hàng"});
+          var updateDN ={
+            idDoanhNgiep: "",
+            TenDoanhNghiep: "",
+            TienDuaDoanhNghiep: "",
+            TienLayDoanhNghiep: "",
+            TienDoanhNghiep: "",
+            TienGiamGia: "",
+            SoDonHang: "",
+            LogoDoanhNghiep:"",
+          }
+          for(let j = 0;j<donHang.length;j++)
+          {
+            var checkThang = donHang[i]._doc.updatedAt.getMonth();
+            if(thanghientai==checkThang)
+            {
+              tienDoanhNghiep = parseFloat(donHang[j]._doc.TongChiPhi) + tienDoanhNghiep;
+              soDonHang++;
+              tienGiamGia = parseFloat(donHang[j]._doc.TienGiamGia) + tienGiamGia;
+            }
+          }
+          updateDN.idDoanhNgiep = IDDoanhNgiep;
+          updateDN.TienDoanhNghiep = tienDoanhNghiep.toString();
+          updateDN.TienGiamGia = tienGiamGia.toString();
+          updateDN.SoDonHang = soDonHang.toString();
+          updateDN.LogoDoanhNghiep = doanhnghiep[i]._doc.Logo;
+          updateDN.TenDoanhNghiep = doanhnghiep[i]._doc.TenDoanhNghiep;
+          tienDuaDoanhNghiep = tienDoanhNghiep+tienGiamGia;
+          tienLayDoanhNghiep = tienDuaDoanhNghiep*5/100;
+          updateDN.TienDuaDoanhNghiep = tienDuaDoanhNghiep.toString();
+          updateDN.TienLayDoanhNghiep = tienLayDoanhNghiep.toString();
+          tongTienDoanhNghiep = tongTienDoanhNghiep+tienDoanhNghiep;
+          tongSoDonHang = soDonHang+tongSoDonHang;
+          tongTienGiamGia = tongTienGiamGia + tienGiamGia;
+          resultThongKeDN[i] = updateDN;
+        }
+        resultTong.TongTien = tongTienDoanhNghiep.toString();
+        resultTong.TongTienGiam = tongTienGiamGia.toString();
+        resultTong.TongDonHang = tongSoDonHang.toString();
+        resultTong.TongTienDuaDoanhNghiep = (tongTienDoanhNghiep+tongTienGiamGia).toString();
+        var donHangDichVu = await DonHangDichVu.find({$or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }, {ThanhToan: "Đã Thanh Toán" }]});
+        var tienGoiDichVu = 0;
+        var soGoiDaMua = 0;
+        for(let i =0;i<donHangDichVu.length;i++)
+        {
+          var checkThang = donHangDichVu[i]._doc.updatedAt.getMonth();
+          if(checkThang == thanghientai)
+          {
+            tienGoiDichVu = parseFloat(donHangDichVu[i]._doc.ChiPhi)+tienGoiDichVu;
+            soGoiDaMua++;
+          }
+        }
+        var resultGoi = {
+          TienGoiDichVu: tienGoiDichVu.toString(),
+          SoGoiDaBan: soGoiDaMua.toString(),
+        }
+        var tongTatCaTien = tienGoiDichVu + tongTienDoanhNghiep + (tongTienDoanhNghiep+tongTienGiamGia)*5/100;
+        var tienLoi = tongTatCaTien - tongTienGiamGia - tongTienDoanhNghiep;
+        var resultTongTien = {
+          TongTatCaTien: tongTatCaTien.toString(),
+          TienLoi: tienLoi.toString(),
+        }
+        res.status(200).send({
+          dataDN: resultThongKeDN,
+          dataTongDN: resultTong,
+          dataGoi:resultGoi,
+          dataTongTien: resultTongTien,
+          error: "null",
+        });
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "No Authentication",
+        });
+      }
+    } else {
+      res.status(404).send({
+        data: "",
+        error: "Not found user!",
+      });
+    }
+  } catch (error) {
+    console.log(error)
+    res.status(500).send({
+      data: "",
+      error: error,
+    });
+  }
+}
   async SearchKH(req, res, next) {
     try {
       const token = req.get("Authorization").replace("Bearer ", "");

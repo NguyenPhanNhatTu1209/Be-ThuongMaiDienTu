@@ -483,7 +483,6 @@ class DoanhNghiepController {
             TrangThai: "Đã Nhận Hàng",
           });
           var tongTien = 0;
-
           var soNgayHienTai = ngayHienTai.getDate();
           var soDonHangNgay1 = 0;
           var soDonHangNgay2 = 0;

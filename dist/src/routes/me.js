@@ -12,8 +12,10 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage: storage });
-var cpUpload = upload.fields([{ name: 'logo', maxCount: 1 }, { name: 'doc', maxCount: 1 }]);
+var cpUpload = upload.fields([{ name: "logo", maxCount: 1 }, { name: "doc", maxCount: 1 }]);
 const meController = require("../app/Controllers/MeController");
+const { sortObject } = require("../app/Controllers/index");
+const { payment } = require("paypal-rest-sdk");
 
 //router.get('/create', khachhangController.create);
 
@@ -22,23 +24,15 @@ router.put("/edit-profile-enterprise", cpUpload, meController.editProfileDN);
 router.put("/edit-profile-customer", meController.editProfileKH);
 router.post("/add-address", diachiController.ThemDiaChi);
 router.put("/edit-address", diachiController.SuaDiaChi);
-router.delete("/delete-address", diachiController.XoaDiaChi);
+router.put("/delete-address", diachiController.XoaDiaChi);
 router.put("/change-password", meController.ChangePassword);
 router.get("/show-product-type", meController.ShowProductType);
-router.get('/success', meController.PaymentSuccess);
-router.get('/cancel', meController.CancelPayment);
-router.get('/successPackageBill', meController.PaymentSuccessBillPackage);
-router.get('/cancelPackageBill', meController.CancelPaymentBillPackage);
-router.post('/refund', meController.RefundPayment);
+router.get("/success", meController.PaymentSuccess);
+router.get("/cancel", meController.CancelPayment);
+router.get("/successPackageBill", meController.PaymentSuccessBillPackage);
+router.get("/cancelPackageBill", meController.CancelPaymentBillPackage);
+router.post("/refund", meController.RefundPayment);
+router.get("/vnpay_return", meController.SuccessVnPayOrder);
+router.get("/vnpay_return_package", meController.SuccessVnPayPackage);
 
-// router.post('/register-doanhnghiep',meController.registerDoanhNghiep);
-// router.post('/login',meController.login);
-
-// router.post('/handle-form-actions',courseController.handleFormActions);
-// router.get('/:id/edit',courseController.edit);
-// router.put('/:id',courseController.update);
-// router.patch('/:id/restore', courseController.restore);
-// router.delete('/:id',courseController.delete);
-// router.delete('/:id/force',courseController.forceDelete);
-// router.get('/:slug', courseController.show);
 module.exports = router;
