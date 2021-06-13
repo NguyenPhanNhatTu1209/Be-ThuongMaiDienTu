@@ -22,6 +22,10 @@ router.post("/create-product-type", adminController.CreateProductType);
 router.put("/update-product-type", adminController.UpdateProductType);
 router.put("/delete-product-type", adminController.DeleteProductType);
 router.get("/search-khachhang", adminController.SearchKH);
+router.get("/show-thongke-thang", adminController.ShowThongKeThang);
+router.get("/show-thongke-thang-truoc", adminController.ShowThongKeThangTruoc);
+
+
 
 
 

@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 const TaiKhoan = require("../Models/TaiKhoan");
 const GoiKhachHang = require("../Models/GoiKhachHang");
@@ -12,53 +11,67 @@ const nodemailer = require("nodemailer");
 class AdminController {
   //Post admin/create-goikhachhang
   async creategoiKH(req, res, next) {
-    const token = req.get("Authorization").replace("Bearer ", "");
-    const _id = await verifyToken(token);
-    var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
-    if (result != null) {
-      const roleDT = result.Role;
-      if (roleDT == "ADMIN") {
-        var resultKH = await GoiKhachHang.create(req.body);
-        res.status(200).send({
-          data: resultKH,
-          error: "null"
-        });
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var resultKH = await GoiKhachHang.create(req.body);
+          res.status(200).send({
+            data: resultKH,
+            error: "null"
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication"
+          });
+        }
       } else {
         res.status(404).send({
           data: "",
-          error: "No Authentication"
+          error: "Not found user!"
         });
       }
-    } else {
-      res.status(404).send({
+    } catch (error) {
+      res.status(500).send({
         data: "",
-        error: "Not found user!"
+        error: error
       });
     }
   }
   //Post admin/create-goidoanhnghiep
   async creategoiDN(req, res, next) {
-    const token = req.get("Authorization").replace("Bearer ", "");
-    const _id = await verifyToken(token);
-    var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
-    if (result != null) {
-      const roleDT = result.Role;
-      if (roleDT == "ADMIN") {
-        var resultDN = await GoiDoanhNghiep.create(req.body);
-        res.status(200).send({
-          data: resultDN,
-          error: "null"
-        });
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var resultDN = await GoiDoanhNghiep.create(req.body);
+          res.status(200).send({
+            data: resultDN,
+            error: "null"
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication"
+          });
+        }
       } else {
         res.status(404).send({
           data: "",
-          error: "No Authentication"
+          error: "Not found user!"
         });
       }
-    } else {
-      res.status(404).send({
+    } catch (error) {
+      res.status(500).send({
         data: "",
-        error: "Not found user!"
+        error: error
       });
     }
   }
@@ -91,13 +104,13 @@ class AdminController {
               error: "null"
             });
           } else {
-            res.status(400).send({
+            res.status(200).send({
               data: "",
               error: "No Package"
             });
           }
         } else {
-          res.status(400).send({
+          res.status(404).send({
             data: "",
             error: "No Authentication"
           });
@@ -160,7 +173,7 @@ class AdminController {
             });
           }
         } else {
-          res.status(400).send({
+          res.status(404).send({
             data: "",
             error: "No Authentication"
           });
@@ -205,7 +218,7 @@ class AdminController {
             });
           }
         } else {
-          res.status(400).send({
+          res.status(404).send({
             data: "",
             error: "No Authentication"
           });
@@ -234,7 +247,7 @@ class AdminController {
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "ADMIN") {
-          var check = await Order.findOne({ _id: idGoiDoanhNghiep });
+          var check = await GoiDoanhNghiep.findOne({ _id: idGoiDoanhNghiep });
           if (check != null) {
             var resultKH = await GoiDoanhNghiep.findOneAndUpdate({ _id: idGoiDoanhNghiep }, updateValue, {
               new: true
@@ -250,7 +263,7 @@ class AdminController {
             });
           }
         } else {
-          res.status(400).send({
+          res.status(404).send({
             data: "",
             error: "No Authentication"
           });
@@ -299,7 +312,7 @@ class AdminController {
               to: EmailDN,
               from: process.env.EmailAdmin,
               subject: "Enterprise Active",
-              text: 'Tài khoản doanh nghiệp của bạn đã được kích hoạt.'
+              text: "Tài khoản doanh nghiệp của bạn đã được kích hoạt."
             };
             smtpTransport.sendMail(mailOptions, async function (error, response) {
               if (error) {
@@ -326,7 +339,7 @@ class AdminController {
             });
           }
         } else {
-          res.status(400).send({
+          res.status(404).send({
             data: "",
             error: "No Authentication"
           });
@@ -356,13 +369,12 @@ class AdminController {
         if (roleDT == "ADMIN") {
           var resultKH = await KhachHang.find({});
           res.status(200).send({
-            data: resultKH,
-            error: "null"
+            data: resultKH
           });
         } else {
           res.status(404).send({
             data: "",
-            error: "No Authorization"
+            error: "No Authentication"
           });
         }
       } else {
@@ -429,8 +441,71 @@ class AdminController {
         if (roleDT == "ADMIN") {
           var resultDN = await DoanhNghiep.find({});
           res.status(200).send({
-            data: resultDN,
-            error: "null"
+            data: resultDN
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authorization"
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "No Account"
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error
+      });
+    }
+  }
+  //Get admin/show-enterprises-inactive
+  async ShowEnterprisesInactive(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var resultDN = await DoanhNghiep.find({ TrangThai: "INACTIVE" });
+          res.status(200).send({
+            data: resultDN
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authorization"
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "No Account"
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error
+      });
+    }
+  }
+  //Get admin/show-enterprises-active
+  async ShowEnterprisesActive(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var resultDN = await DoanhNghiep.find({ TrangThai: "ACTIVE" });
+          res.status(200).send({
+            data: resultDN
           });
         } else {
           res.status(404).send({
@@ -476,6 +551,39 @@ class AdminController {
           res.status(404).send({
             data: "",
             error: "No Authorization"
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!"
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error
+      });
+    }
+  }
+
+  //get admin/show-product-type
+  async ShowProductType(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var resultLoaiSanPham = await LoaiHangHoaSanPham.find();
+          res.status(200).send({
+            data: resultLoaiSanPham
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication"
           });
         }
       } else {
@@ -567,7 +675,7 @@ class AdminController {
       });
     }
   }
-  //Delete admin/delete-product-type
+  //Put admin/delete-product-type
   async DeleteProductType(req, res, next) {
     try {
       const _idLoaiSanPham = req.body.idLoaiSanPham;
@@ -606,7 +714,39 @@ class AdminController {
       });
     }
   }
-
+  async SearchKH(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var title = req.query.title;
+          var resultKH = await KhachHang.find({ $or: [{ 'Email': new RegExp(title) }, { 'SoDienThoai': new RegExp(title) }] });
+          res.status(200).send({
+            data: resultKH,
+            error: "null"
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication"
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "No Account"
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error
+      });
+    }
+  }
 }
 
 module.exports = new AdminController();

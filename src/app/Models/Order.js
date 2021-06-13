@@ -13,6 +13,7 @@ const Order = new Schema(
     GiamGia: { type: Number, default: 0 },
     TongChiPhi: { type: String, required: true },
     ThanhToan:{type: String, default: "Chưa thanh toán"},
+    TienGiamGia:{type:String, default: null},
     id_KhachHang: { type: String, default: null },
     id_DoanhNghiep: { type: String, default: null },
     id_GoiShipping: { type: String, default: null },

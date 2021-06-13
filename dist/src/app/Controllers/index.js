@@ -44,8 +44,8 @@ function paymentMethod(price, idDonHang, next) {
       payment_method: "paypal"
     },
     redirect_urls: {
-      return_url: `http:///localhost:3000/me/success?price=${price}&idDonHang=${idDonHang}`,
-      cancel_url: "http://localhost:3000/me/cancel"
+      return_url: `http://54.255.93.14/me/success?price=${price}&idDonHang=${idDonHang}`,
+      cancel_url: "http://54.255.93.14/me/cancel"
     },
     transactions: [{
       item_list: {
@@ -76,8 +76,8 @@ function paymentMethodPackage(price, idDonHang, next) {
       payment_method: "paypal"
     },
     redirect_urls: {
-      return_url: `http:///localhost:3000/me/successPackageBill?price=${price}&idDonHang=${idDonHang}`,
-      cancel_url: "http://localhost:3000/me/cancelPackageBill"
+      return_url: `http://54.255.93.14/me/successPackageBill?price=${price}&idDonHang=${idDonHang}`,
+      cancel_url: "http://54.255.93.14/me/cancelPackageBill"
     },
     transactions: [{
       item_list: {
@@ -143,6 +143,24 @@ async function UploadImage(name, folder) {
 
   return urls[0];
 }
+function sortObject(o) {
+  var sorted = {},
+      key,
+      a = [];
+
+  for (key in o) {
+    if (o.hasOwnProperty(key)) {
+      a.push(key);
+    }
+  }
+
+  a.sort();
+
+  for (key = 0; key < a.length; key++) {
+    sorted[a[key]] = o[a[key]];
+  }
+  return sorted;
+}
 
 module.exports = {
   createToken,
@@ -153,5 +171,6 @@ module.exports = {
   FormatDollar,
   paymentMethodPackage,
   RefundPayment,
-  UploadImage
+  UploadImage,
+  sortObject
 };

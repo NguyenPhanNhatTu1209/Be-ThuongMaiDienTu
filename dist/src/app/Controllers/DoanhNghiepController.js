@@ -2,7 +2,14 @@ const DoanhNghiep = require("../Models/DoanhNghiep");
 const GoiVanChuyen = require("../Models/GoiVanChuyen");
 const TaiKhoan = require("../Models/TaiKhoan");
 const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
-const { verifyToken, paymentMethodPackage, FormatDollar } = require("../Controllers/index");
+const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
+const fetch = require('node-fetch');
+const {
+  verifyToken,
+  paymentMethodPackage,
+  FormatDollar,
+  sortObject
+} = require("../Controllers/index");
 const Order = require("../Models/Order");
 const DonHangDichVu = require("../Models/DonHangDichVu");
 
@@ -14,8 +21,7 @@ class DoanhNghiepController {
     var result = await GoiDoanhNghiep.find({ DeleteAt: "False" });
     if (result != null) {
       res.status(200).send({
-        data: result,
-        error: "null"
+        data: result
       });
     } else {
       res.status(404).send({
@@ -32,7 +38,9 @@ class DoanhNghiepController {
       const userDb = await TaiKhoan.findOne({ _id, Status: "ACTIVE" });
       if (userDb.Role == "DOANHNGHIEP") {
         createData.IdCongTy = (await DoanhNghiep.findOne({ id_account: _id }))._id;
-        const resultDoanhNghiep = await DoanhNghiep.findOne({ _id: createData.IdCongTy });
+        const resultDoanhNghiep = await DoanhNghiep.findOne({
+          _id: createData.IdCongTy
+        });
         var trangThaiDoanhNghiep = resultDoanhNghiep._doc.TrangThai;
         if (trangThaiDoanhNghiep == "ACTIVE") {
           const shippingPackage = await GoiVanChuyen.create(createData);
@@ -69,10 +77,14 @@ class DoanhNghiepController {
       const userDb = await TaiKhoan.findOne({ _id, Status: "ACTIVE" });
       if (userDb.Role == "DOANHNGHIEP") {
         createData.IdCongTy = (await DoanhNghiep.findOne({ id_account: _id }))._id;
-        const resultDoanhNghiep = await DoanhNghiep.findOne({ _id: createData.IdCongTy });
+        const resultDoanhNghiep = await DoanhNghiep.findOne({
+          _id: createData.IdCongTy
+        });
         var trangThaiDoanhNghiep = resultDoanhNghiep._doc.TrangThai;
         if (trangThaiDoanhNghiep == "ACTIVE") {
-          const shippingPackageOld = await GoiVanChuyen.findOneAndUpdate({ _id: idPackageOld, Status: "ACTIVE" }, { Status: "INACTIVE" });
+          const shippingPackageOld = await GoiVanChuyen.findOneAndUpdate({ _id: idPackageOld, Status: "ACTIVE" }, { Status: "INACTIVE" }, {
+            new: true
+          });
           if (shippingPackageOld != null) {
             const shippingPackageNew = await GoiVanChuyen.create(createData);
             res.status(200).send({
@@ -112,7 +124,9 @@ class DoanhNghiepController {
       const _id = await verifyToken(token);
       const userDb = await TaiKhoan.findOne({ _id, Status: "ACTIVE" });
       if (userDb.Role == "DOANHNGHIEP") {
-        const resultDoanhNghiep = await DoanhNghiep.findOne({ id_account: _id });
+        const resultDoanhNghiep = await DoanhNghiep.findOne({
+          id_account: _id
+        });
         var trangThaiDoanhNghiep = resultDoanhNghiep._doc.TrangThai;
         if (trangThaiDoanhNghiep == "ACTIVE") {
           const shippingPackage = await GoiVanChuyen.findOneAndUpdate({ _id: idPackage }, { Status: "DELETED" }, { new: true });
@@ -139,21 +153,7 @@ class DoanhNghiepController {
       });
     }
   }
-  //Get enterprises/show-shipping-package
-  async ShowShippingPackage(req, res, next) {
-    try {
-      const shippingPackage = await GoiVanChuyen.find({ Status: "ACTIVE" });
-      res.status(200).send({
-        data: shippingPackage,
-        error: ""
-      });
-    } catch (error) {
-      res.status(500).send({
-        data: error,
-        error: "Internal Server Error"
-      });
-    }
-  }
+
   //Get enterprises/show-shipping-package-by-enterprise
   async ShowShippingPackageByEnterprise(req, res, next) {
     try {
@@ -165,10 +165,25 @@ class DoanhNghiepController {
           IdCongTy,
           Status: "ACTIVE"
         });
-        res.status(200).send({
-          data: shippingPackage,
-          error: ""
-        });
+        var mangShippingPackage = [];
+        mangShippingPackage = shippingPackage;
+        if (mangShippingPackage.length != 0) {
+          for (let i = 0; i < mangShippingPackage.length; i++) {
+            var _idLoaiHangHoa = mangShippingPackage[i]._doc.IdLoaiHangHoa;
+            var productType = await LoaiHangHoaSanPham.findOne({
+              _id: _idLoaiHangHoa
+            });
+            var tenHangHoa = productType._doc.LoaiHangHoa;
+            mangShippingPackage[i]._doc.LoaiHangHoa = tenHangHoa;
+          }
+          res.status(200).send({
+            data: mangShippingPackage
+          });
+        } else {
+          res.status(200).send({
+            data: mangShippingPackage
+          });
+        }
       } else {
         res.status(400).send({
           data: "",
@@ -176,6 +191,7 @@ class DoanhNghiepController {
         });
       }
     } catch (error) {
+      console.log(error);
       res.status(500).send({
         data: error,
         error: "Internal Server Error"
@@ -194,8 +210,7 @@ class DoanhNghiepController {
           id_DoanhNghiep: IdCongTy
         });
         res.status(200).send({
-          data: donHang,
-          error: ""
+          data: donHang
         });
       } else {
         res.status(400).send({
@@ -316,14 +331,21 @@ class DoanhNghiepController {
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "DOANHNGHIEP") {
-          var resultGoiDichVu = await GoiDoanhNghiep.findOne({ _id: update.id_GoiDichVu, DeleteAt: "False" });
+          var resultGoiDichVu = await GoiDoanhNghiep.findOne({
+            _id: update.id_GoiDichVu,
+            DeleteAt: "False"
+          });
           if (resultGoiDichVu != null) {
             update.TenGoi = resultGoiDichVu._doc.TenGoi;
             update.ChiPhi = resultGoiDichVu._doc.ChiPhi;
             var resultDN = await DoanhNghiep.findOne({ id_account: _id });
             update.id_DoanhNghiep = resultDN._doc._id;
             var chiPhi = parseFloat(update.ChiPhi);
-            var tienDo = chiPhi / 23050;
+            const usdToVND = await fetch("http://api.currencylayer.com/live?access_key=0439c3cc10ac72fa45229f54047c1df4&format=1");
+            var datausdToVND = await usdToVND.json();
+            var VND = parseFloat(datausdToVND.quotes.USDVND);
+            console.log(VND);
+            var tienDo = chiPhi / VND;
             var formatDollar = FormatDollar(tienDo);
             var resultBillPackage = await DonHangDichVu.create(update);
             var idDonHangMoiTao = resultBillPackage._doc._id;
@@ -378,7 +400,6 @@ class DoanhNghiepController {
   //Get enterprises/show-order-in-one-week-by-enterprise
   async ShowOrderByOneWeek(req, res, next) {
     try {
-
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
       var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
@@ -420,7 +441,12 @@ class DoanhNghiepController {
               doanhthu: ""
             }
           };
-          var thongKeDonHang = await Order.find({ id_DoanhNghiep: idCongTy, updatedAt: { $gte: ngayXet }, ThanhToan: "Đã Thanh Toán", TrangThai: "Đã Nhận Hàng" });
+          var thongKeDonHang = await Order.find({
+            id_DoanhNghiep: idCongTy,
+            updatedAt: { $gte: ngayXet },
+            $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],
+            TrangThai: "Đã Nhận Hàng"
+          });
           var tongTien = 0;
 
           var soNgayHienTai = ngayHienTai.getDate();
@@ -492,8 +518,7 @@ class DoanhNghiepController {
           result.ngay7.doanhthu = soTienNgay7;
           if (thongKeDonHang[0] != null) {
             res.status(200).send({
-              data: result,
-              error: ""
+              data: result
             });
           } else {
             res.status(404).send({
@@ -520,7 +545,6 @@ class DoanhNghiepController {
   //Get enterprises/show-order-in-three-month-by-enterprise
   async ShowOrderByThreeMonth(req, res, next) {
     try {
-
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
       var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
@@ -546,7 +570,12 @@ class DoanhNghiepController {
               doanhthu: ""
             }
           };
-          var thongKeDonHang = await Order.find({ id_DoanhNghiep: idCongTy, updatedAt: { $gte: ngayXet }, ThanhToan: "Đã Thanh Toán", TrangThai: "Đã Nhận Hàng" });
+          var thongKeDonHang = await Order.find({
+            id_DoanhNghiep: idCongTy,
+            updatedAt: { $gte: ngayXet },
+            $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],
+            TrangThai: "Đã Nhận Hàng"
+          });
           var soDonHangThang1 = 0;
           var soDonHangThang2 = 0;
           var soDonHangThang3 = 0;
@@ -592,8 +621,7 @@ class DoanhNghiepController {
           result.thangthu3.doanhthu = soTienThang3;
           if (thongKeDonHang[0] != null) {
             res.status(200).send({
-              data: result,
-              error: ""
+              data: result
             });
           } else {
             res.status(404).send({
@@ -620,7 +648,6 @@ class DoanhNghiepController {
   //Get enterprises/show-order-in-one-year-by-enterprise
   async ShowOrderByOneYear(req, res, next) {
     try {
-
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
       var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
@@ -682,7 +709,12 @@ class DoanhNghiepController {
               doanhthu: ""
             }
           };
-          var thongKeDonHang = await Order.find({ id_DoanhNghiep: idCongTy, updatedAt: { $gte: ngayXet }, ThanhToan: "Đã Thanh Toán", TrangThai: "Đã Nhận Hàng" });
+          var thongKeDonHang = await Order.find({
+            id_DoanhNghiep: idCongTy,
+            updatedAt: { $gte: ngayXet },
+            $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],
+            TrangThai: "Đã Nhận Hàng"
+          });
           var soDonHangThang1 = 0;
           var soDonHangThang2 = 0;
           var soDonHangThang3 = 0;
@@ -707,44 +739,46 @@ class DoanhNghiepController {
           var soTienThang10 = 0;
           var soTienThang11 = 0;
           var soTienThang12 = 0;
-          var soThang = ngayHienTai.getMonth();
+          var soNam = ngayHienTai.getFullYear();
           for (var i = 0; i < thongKeDonHang.length; i++) {
+            console.log(thongKeDonHang[i]._doc);
             var chiPhi = parseFloat(thongKeDonHang[i]._doc.TongChiPhi);
             var checkThang = thongKeDonHang[i]._doc.updatedAt.getMonth();
-            if (checkThang == 0) {
+            var checkNam = thongKeDonHang[i]._doc.updatedAt.getFullYear();
+            if (checkThang == 0 && checkNam == soNam) {
               soDonHangThang1 = soDonHangThang1 + 1;
               soTienThang1 = soTienThang1 + chiPhi;
-            } else if (checkThang == 1) {
+            } else if (checkThang == 1 && checkNam == soNam) {
               soDonHangThang2 = soDonHangThang2 + 1;
               soTienThang2 = soTienThang2 + chiPhi;
-            } else if (checkThang == 2) {
+            } else if (checkThang == 2 && checkNam == soNam) {
               soDonHangThang3 = soDonHangThang3 + 1;
               soTienThang3 = soTienThang3 + chiPhi;
-            } else if (checkThang == 3) {
+            } else if (checkThang == 3 && checkNam == soNam) {
               soDonHangThang4 = soDonHangThang4 + 1;
               soTienThang4 = soTienThang4 + chiPhi;
-            } else if (checkThang == 4) {
+            } else if (checkThang == 4 && checkNam == soNam) {
               soDonHangThang5 = soDonHangThang5 + 1;
               soTienThang5 = soTienThang5 + chiPhi;
-            } else if (checkThang == 5) {
+            } else if (checkThang == 5 && checkNam == soNam) {
               soDonHangThang6 = soDonHangThang6 + 1;
               soTienThang6 = soTienThang6 + chiPhi;
-            } else if (checkThang == 6) {
+            } else if (checkThang == 6 && checkNam == soNam) {
               soDonHangThang7 = soDonHangThang7 + 1;
               soTienThang7 = soTienThang7 + chiPhi;
-            } else if (checkThang == 7) {
+            } else if (checkThang == 7 && checkNam == soNam) {
               soDonHangThang8 = soDonHangThang8 + 1;
               soTienThang8 = soTienThang8 + chiPhi;
-            } else if (checkThang == 8) {
+            } else if (checkThang == 8 && checkNam == soNam) {
               soDonHangThang9 = soDonHangThang9 + 1;
               soTienThang9 = soTienThang9 + chiPhi;
-            } else if (checkThang == 9) {
+            } else if (checkThang == 9 && checkNam == soNam) {
               soDonHangThang10 = soDonHangThang10 + 1;
               soTienThang10 = soTienThang10 + chiPhi;
-            } else if (checkThang == 10) {
+            } else if (checkThang == 10 && checkNam == soNam) {
               soDonHangThang11 = soDonHangThang11 + 1;
               soTienThang11 = soTienThang11 + chiPhi;
-            } else if (checkThang == 11) {
+            } else if (checkThang == 11 && checkNam == soNam) {
               soDonHangThang12 = soDonHangThang12 + 1;
               soTienThang12 = soTienThang12 + chiPhi;
             }
@@ -790,8 +824,7 @@ class DoanhNghiepController {
           result.thangthu12.doanhthu = soTienThang12;
           if (thongKeDonHang[0] != null) {
             res.status(200).send({
-              data: result,
-              error: ""
+              data: result
             });
           } else {
             res.status(404).send({
@@ -815,6 +848,198 @@ class DoanhNghiepController {
     }
   }
 
+  //get enterprise/show-product-type
+  async ShowProductType(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "DOANHNGHIEP") {
+          var resultLoaiSanPham = await LoaiHangHoaSanPham.find();
+          res.status(200).send({
+            data: resultLoaiSanPham
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication"
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!"
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error
+      });
+    }
+  }
+
+  //get enterprises/show-product-type
+  async ShowProductType(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "DOANHNGHIEP") {
+          var resultLoaiSanPham = await LoaiHangHoaSanPham.find();
+          res.status(200).send({
+            data: resultLoaiSanPham
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication"
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!"
+        });
+      }
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error
+      });
+    }
+  }
+  // Post customers/create_payment_vnpayurl_package
+  async CreatePaymentVnpayurlPackage(req, res, next) {
+    try {
+      var {
+        TenGoi,
+        ChiPhi,
+        ThanhToan,
+        id_GoiDichVu,
+        id_DoanhNghiep,
+        id_KhachHang
+      } = req.body;
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var update = {
+        TenGoi,
+        ChiPhi,
+        ThanhToan,
+        id_GoiDichVu,
+        id_DoanhNghiep,
+        id_KhachHang
+      };
+      var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "DOANHNGHIEP") {
+          var resultGoiDichVu = await GoiDoanhNghiep.findOne({
+            _id: update.id_GoiDichVu,
+            DeleteAt: "False"
+          });
+
+          if (resultGoiDichVu != null) {
+            update.TenGoi = resultGoiDichVu._doc.TenGoi;
+            update.ChiPhi = resultGoiDichVu._doc.ChiPhi;
+            var resultDN = await DoanhNghiep.findOne({ id_account: _id });
+            update.id_DoanhNghiep = resultDN._doc._id;
+            var chiPhi = parseFloat(update.ChiPhi);
+            var resultBillPackage = await DonHangDichVu.create(update);
+            var idDonHangMoiTao = resultBillPackage._doc._id;
+            var resultPayment;
+            var ngayHienTai = new Date();
+            ngayHienTai.setDate(ngayHienTai.getDate());
+            var ngayHetHan = resultDN._doc.NgayHetHan;
+            var soDonHangHienTai = resultDN._doc.SoDonHang;
+            if (ngayHienTai <= ngayHetHan && soDonHangHienTai > 0) {
+              res.status(400).send({
+                data: "",
+                error: "Gói của bạn vẫn còn hiệu lực"
+              });
+            } else {
+              var ipAddr = req.headers["x-forwarded-for"] || req.connection.remoteAddress || req.socket.remoteAddress || req.connection.socket.remoteAddress;
+
+              var dateFormat = require("dateformat");
+
+              var tmnCode = "JCO3SG7X";
+              var secretKey = "BKPYNKKKBEAZCHZFHLIXKMXXCODHEVSU";
+              var vnpUrl = "http://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+              var returnUrl = "http://localhost:3000/me/vnpay_return_package";
+
+              var date = new Date();
+
+              var createDate = dateFormat(date, "yyyymmddHHmmss");
+              var orderId = dateFormat(date, "HHmmss");
+              var amount = chiPhi.toString();
+              var bankCode = "NCB";
+              var id = `${idDonHangMoiTao}`;
+              var orderInfo = id;
+              var orderType = "payment";
+              var locale = "vn";
+
+              var currCode = "VND";
+              var vnp_Params = {};
+              vnp_Params["vnp_Version"] = "2";
+              vnp_Params["vnp_Command"] = "pay";
+              vnp_Params["vnp_TmnCode"] = tmnCode;
+              // vnp_Params['vnp_Merchant'] = ''
+              vnp_Params["vnp_Locale"] = locale;
+              vnp_Params["vnp_CurrCode"] = currCode;
+              vnp_Params["vnp_TxnRef"] = orderId;
+              vnp_Params["vnp_OrderInfo"] = orderInfo;
+              vnp_Params["vnp_OrderType"] = orderType;
+              // id don
+              vnp_Params["vnp_Amount"] = amount * 100;
+              vnp_Params["vnp_ReturnUrl"] = returnUrl;
+              vnp_Params["vnp_IpAddr"] = ipAddr;
+              vnp_Params["vnp_CreateDate"] = createDate;
+              if (bankCode !== null && bankCode !== "") {
+                vnp_Params["vnp_BankCode"] = bankCode;
+              }
+
+              vnp_Params = sortObject(vnp_Params);
+
+              var querystring = require("qs");
+              var signData = secretKey + querystring.stringify(vnp_Params, { encode: false });
+
+              var sha256 = require("sha256");
+
+              var secureHash = sha256(signData);
+
+              vnp_Params["vnp_SecureHashType"] = "SHA256";
+              vnp_Params["vnp_SecureHash"] = secureHash;
+              vnpUrl += "?" + querystring.stringify(vnp_Params, { encode: true });
+              resultPayment = vnpUrl;
+              res.status(200).send({
+                data: resultPayment,
+                error: "null"
+              });
+            }
+          } else {
+            res.status(404).send({
+              data: "",
+              error: "Not found Package!"
+            });
+          }
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "Not found user!"
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        error: error
+      });
+    }
+  }
 }
 
 module.exports = new DoanhNghiepController();

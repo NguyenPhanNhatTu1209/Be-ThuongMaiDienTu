@@ -12,7 +12,7 @@ const paypal = require("paypal-rest-sdk");
 const bcrypt = require("bcrypt");
 const { UploadImage } = require("./index");
 
-const { createToken, verifyToken } = require("./index");
+const { createToken, verifyToken, sortObject } = require("./index");
 const Paypal = require("../Models/Paypal");
 const { fileURLToPath } = require("url");
 
@@ -30,14 +30,12 @@ class MeController {
           const resultAddress = await DiaChi.find({ id_account: _id }); // find All address by id account
           resultKH._doc.address = resultAddress; // them vao bien resultKH 1 key la address va` gia' tri la bien resultAddress vua tim dc o dong tren
           res.status(200).send({
-            data: resultKH,
-            error: "null"
+            data: resultKH
           });
         } else {
           var resultDN = await DoanhNghiep.findOne({ id_account: _id });
           res.status(200).send({
-            data: resultDN,
-            error: "null"
+            data: resultDN
           });
         }
       } else {
@@ -60,29 +58,44 @@ class MeController {
       const _id = await verifyToken(token);
       var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
       if (result != null) {
-        const logo = req.files["logo"][0];
-        const doc = req.files["doc"][0];
-        const nameLogo = logo.filename;
-        const nameDoc = doc.filename;
-        const tenDN = req.body.TenDoanhNghiep;
-        const sdtDN = req.body.SoDienThoai;
-        const diaChiDN = req.body.DiaChi;
-        const urlLogo = await UploadImage(nameLogo, "Logos/");
-        const urlDoc = await UploadImage(nameDoc, "Docs/");
-        var updateValueDN = {
-          TenDoanhNghiep: tenDN,
-          SoDienThoai: sdtDN,
-          DiaChi: diaChiDN,
-          GiayPhep: urlDoc,
-          Logo: urlLogo
-        };
-        var resultDN = await DoanhNghiep.findOneAndUpdate({ id_account: _id }, updateValueDN, {
-          new: true
-        });
-        res.status(200).send({
-          data: resultDN,
-          error: "null"
-        });
+        if (req.files["logo"] != null) {
+          const logo = req.files["logo"][0];
+          const nameLogo = logo.filename;
+          const tenDN = req.body.TenDoanhNghiep;
+          const sdtDN = req.body.SoDienThoai;
+          const diaChiDN = req.body.DiaChi;
+          const urlLogo = await UploadImage(nameLogo, "Logos/");
+          var updateValueDN = {
+            TenDoanhNghiep: tenDN,
+            SoDienThoai: sdtDN,
+            DiaChi: diaChiDN,
+            Logo: urlLogo
+          };
+          var resultDN = await DoanhNghiep.findOneAndUpdate({ id_account: _id }, updateValueDN, {
+            new: true
+          });
+          res.status(200).send({
+            data: resultDN,
+            error: "null"
+          });
+        } else {
+          const tenDN = req.body.TenDoanhNghiep;
+          const sdtDN = req.body.SoDienThoai;
+          const diaChiDN = req.body.DiaChi;
+
+          var updateValueDN = {
+            TenDoanhNghiep: tenDN,
+            SoDienThoai: sdtDN,
+            DiaChi: diaChiDN
+          };
+          var resultDN = await DoanhNghiep.findOneAndUpdate({ id_account: _id }, updateValueDN, {
+            new: true
+          });
+          res.status(200).send({
+            data: resultDN,
+            error: "null"
+          });
+        }
       } else {
         res.status(404).send({
           data: "",
@@ -170,8 +183,7 @@ class MeController {
       var result = await LoaiHangHoaSanPham.find({ Status: "ACTIVE" });
       if (result != null) {
         res.status(200).send({
-          data: result,
-          error: "null"
+          data: result
         });
       } else {
         res.status(404).send({
@@ -192,7 +204,7 @@ class MeController {
     const paymentId = req.query.paymentId;
     const price = req.query.price;
     const idDonHang = req.query.idDonHang;
-    var update = { ThanhToan: "Đã Thanh Toán" };
+    var update = { ThanhToan: "PayPal" };
     const execute_payment_json = {
       payer_id: payerId,
       transactions: [{
@@ -226,82 +238,86 @@ class MeController {
   }
   //get me/successPackageBill
   async PaymentSuccessBillPackage(req, res, next) {
-    const payerId = req.query.PayerID;
-    const paymentId = req.query.paymentId;
-    const price = req.query.price;
-    const idDonHang = req.query.idDonHang;
-    var update = { ThanhToan: "Đã Thanh Toán" };
-    const execute_payment_json = {
-      payer_id: payerId,
-      transactions: [{
-        amount: {
-          currency: "USD",
-          total: `${price}`
-        }
-      }]
-    };
-    paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
-      if (error) {
-        res.send("Payment Fail");
-      } else {
-        var donHangDichVu = await DonHangDichVu.findOneAndUpdate({ _id: idDonHang }, update, {
-          new: true
-        });
-        var resultDN = await DoanhNghiep.findOne({
-          _id: donHangDichVu._doc.id_DoanhNghiep
-        });
-        if (resultDN == null) {
-          var resultGoiDV = await GoiKhachHang.findOne({
-            DeleteAt: "False",
-            _id: donHangDichVu._doc.id_GoiDichVu
-          });
-          const {
-            TenDichVuKhachHang,
-            KhoiLuongToiDa,
-            SoDonHang,
-            GiamGia
-          } = resultGoiDV;
-          var soNgay = resultGoiDV.HanSuDung;
-          // Create new Date instance
-          var date = new Date();
-          // Add a day
-          date.setDate(date.getDate() + soNgay);
-          const updateKH = {
-            TenDichVuKhachHang,
-            KhoiLuongToiDa,
-            NgayHetHan: date,
-            SoDonHang,
-            GiamGia
-          };
-          var resultKH = await KhachHang.findOne({
-            _id: donHangDichVu._doc.id_KhachHang
-          });
-          await KhachHang.findOneAndUpdate({ _id: donHangDichVu._doc.id_KhachHang }, updateKH, {
-            new: true
-          });
+    try {
+      const payerId = req.query.PayerID;
+      const paymentId = req.query.paymentId;
+      const price = req.query.price;
+      const idDonHang = req.query.idDonHang;
+      var update = { ThanhToan: "PayPal" };
+      const execute_payment_json = {
+        payer_id: payerId,
+        transactions: [{
+          amount: {
+            currency: "USD",
+            total: `${price}`
+          }
+        }]
+      };
+      paypal.payment.execute(paymentId, execute_payment_json, async function (error, payment) {
+        if (error) {
+          res.send("Payment Fail");
         } else {
-          var resultGoiDV = await GoiDoanhNghiep.findOne({
-            DeleteAt: "False",
-            _id: donHangDichVu._doc.id_GoiDichVu
-          });
-          const { TenGoi, SoDonHang } = resultGoiDV;
-          var soNgay = resultGoiDV.HanSuDung;
-          // Create new Date instance
-          var date = new Date();
-          // Add a day
-          date.setDate(date.getDate() + soNgay);
-          const updateDN = { TenGoi, NgayHetHan: date, SoDonHang };
-          await DoanhNghiep.findOneAndUpdate({ _id: donHangDichVu._doc.id_DoanhNghiep }, updateDN, {
+          var donHangDichVu = await DonHangDichVu.findOneAndUpdate({ _id: idDonHang }, update, {
             new: true
           });
-        }
+          var resultDN = await DoanhNghiep.findOne({
+            _id: donHangDichVu._doc.id_DoanhNghiep
+          });
+          if (resultDN == null) {
+            var resultGoiDV = await GoiKhachHang.findOne({
+              DeleteAt: "False",
+              _id: donHangDichVu._doc.id_GoiDichVu
+            });
+            const {
+              TenDichVuKhachHang,
+              KhoiLuongToiDa,
+              SoDonHang,
+              GiamGia
+            } = resultGoiDV;
+            var soNgay = resultGoiDV.HanSuDung;
+            // Create new Date instance
+            var date = new Date();
+            // Add a day
+            date.setDate(date.getDate() + soNgay);
+            const updateKH = {
+              TenDichVuKhachHang,
+              KhoiLuongToiDa,
+              NgayHetHan: date,
+              SoDonHang,
+              GiamGia
+            };
+            await KhachHang.findOneAndUpdate({ _id: donHangDichVu._doc.id_KhachHang }, updateKH, {
+              new: true
+            });
+          } else {
+            var resultGoiDV = await GoiDoanhNghiep.findOne({
+              DeleteAt: "False",
+              _id: donHangDichVu._doc.id_GoiDichVu
+            });
+            const { TenGoi, SoDonHang } = resultGoiDV;
+            var soNgay = resultGoiDV.HanSuDung;
+            // Create new Date instance
+            var date = new Date();
+            // Add a day
+            date.setDate(date.getDate() + soNgay);
+            const updateDN = { TenGoi, NgayHetHan: date, SoDonHang };
+            await DoanhNghiep.findOneAndUpdate({ _id: donHangDichVu._doc.id_DoanhNghiep }, updateDN, {
+              new: true
+            });
+          }
 
-        res.send({
-          message: "Success",
-          payment
-        });
-      }
-    });
+          res.send({
+            message: "Success",
+            payment
+          });
+        }
+      });
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error
+      });
+    }
   }
   async CancelPaymentBillPackage(req, res, next) {
     res.send("Payment is canceled");
@@ -311,30 +327,161 @@ class MeController {
   }
   //post me/refund
   async RefundPayment(req, res, next) {
-    const { id_Order } = req.body;
-    const resultPaypal = await PaypalModel.findOne({ id_Order });
-    const data = {
-      amount: {
-        total: `${resultPaypal.Transaction}`,
-        currency: "USD"
-      }
-    };
+    try {
+      const { id_Order } = req.body;
+      const resultPaypal = await PaypalModel.findOne({ id_Order });
+      const data = {
+        amount: {
+          total: `${resultPaypal.Transaction}`,
+          currency: "USD"
+        }
+      };
 
-    paypal.sale.refund(resultPaypal.id_Paypal, data, function (error, refund) {
-      if (error) {
-        res.status(400).send({
-          msg: "Refund fail!",
-          data: "",
-          error: error
+      paypal.sale.refund(resultPaypal.id_Paypal, data, function (error, refund) {
+        if (error) {
+          res.status(400).send({
+            msg: "Refund fail!",
+            data: "",
+            error: error
+          });
+        } else {
+          res.status(200).send({
+            msg: "Refund success!",
+            data: refund,
+            error: ""
+          });
+        }
+      });
+    } catch (error) {
+      res.status(500).send({
+        data: "",
+        error: error
+      });
+    }
+  }
+  //Get me/vnpay_return
+  async SuccessVnPayOrder(req, res, next) {
+    var vnp_Params = req.query;
+    var secureHash = vnp_Params["vnp_SecureHash"];
+    var id = vnp_Params["vnp_OrderInfo"];
+    var amount = vnp_Params["vnp_Amount"] / 100;
+    delete vnp_Params["vnp_SecureHash"];
+    delete vnp_Params["vnp_SecureHashType"];
+
+    vnp_Params = sortObject(vnp_Params);
+
+    var tmnCode = "JCO3SG7X";
+    var secretKey = "BKPYNKKKBEAZCHZFHLIXKMXXCODHEVSU";
+
+    var querystring = require("qs");
+    var signData = secretKey + querystring.stringify(vnp_Params, { encode: false });
+
+    var sha256 = require("sha256");
+
+    var checkSum = sha256(signData);
+
+    if (secureHash === checkSum) {
+      //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
+
+      await Order.findOneAndUpdate({ _id: id }, {
+        ThanhToan: "VnPay"
+      }, {
+        new: true
+      });
+      res.send({
+        message: "Success",
+        paymentId: id,
+        amount: amount
+      });
+    } else {
+      res.render("success", { code: "97" });
+    }
+  }
+
+  //Get me/vnpay_return_package
+  async SuccessVnPayPackage(req, res, next) {
+    var vnp_Params = req.query;
+    var secureHash = vnp_Params["vnp_SecureHash"];
+    var id = vnp_Params["vnp_OrderInfo"];
+    var amount = vnp_Params["vnp_Amount"] / 100;
+    delete vnp_Params["vnp_SecureHash"];
+    delete vnp_Params["vnp_SecureHashType"];
+
+    vnp_Params = sortObject(vnp_Params);
+
+    var tmnCode = "JCO3SG7X";
+    var secretKey = "BKPYNKKKBEAZCHZFHLIXKMXXCODHEVSU";
+
+    var querystring = require("qs");
+    var signData = secretKey + querystring.stringify(vnp_Params, { encode: false });
+
+    var sha256 = require("sha256");
+
+    var checkSum = sha256(signData);
+
+    if (secureHash === checkSum) {
+      //Kiem tra xem du lieu trong db co hop le hay khong va thong bao ket qua
+      var donHangDichVu = await DonHangDichVu.findOneAndUpdate({ _id: id }, {
+        ThanhToan: "VnPay"
+      }, {
+        new: true
+      });
+      var resultDN = await DoanhNghiep.findOne({
+        _id: donHangDichVu._doc.id_DoanhNghiep
+      });
+      if (resultDN == null) {
+        var resultGoiDV = await GoiKhachHang.findOne({
+          DeleteAt: "False",
+          _id: donHangDichVu._doc.id_GoiDichVu
+        });
+        const {
+          TenDichVuKhachHang,
+          KhoiLuongToiDa,
+          SoDonHang,
+          GiamGia
+        } = resultGoiDV;
+        var soNgay = resultGoiDV.HanSuDung;
+        // Create new Date instance
+        var date = new Date();
+        // Add a day
+        date.setDate(date.getDate() + soNgay);
+        const updateKH = {
+          TenDichVuKhachHang,
+          KhoiLuongToiDa,
+          NgayHetHan: date,
+          SoDonHang,
+          GiamGia
+        };
+        var resultKH = await KhachHang.findOne({
+          _id: donHangDichVu._doc.id_KhachHang
+        });
+        await KhachHang.findOneAndUpdate({ _id: donHangDichVu._doc.id_KhachHang }, updateKH, {
+          new: true
         });
       } else {
-        res.status(200).send({
-          msg: "Refund success!",
-          data: refund,
-          error: ""
+        var resultGoiDV = await GoiDoanhNghiep.findOne({
+          DeleteAt: "False",
+          _id: donHangDichVu._doc.id_GoiDichVu
+        });
+        const { TenGoi, SoDonHang } = resultGoiDV;
+        var soNgay = resultGoiDV.HanSuDung;
+        // Create new Date instance
+        var date = new Date();
+        // Add a day
+        date.setDate(date.getDate() + soNgay);
+        const updateDN = { TenGoi, NgayHetHan: date, SoDonHang };
+        await DoanhNghiep.findOneAndUpdate({ _id: donHangDichVu._doc.id_DoanhNghiep }, updateDN, {
+          new: true
         });
       }
-    });
+      res.send({
+        message: "Success",
+        paymentId: id,
+        amount: amount
+      });
+    } else {
+      res.render("success", { code: "97" });
+    }
   }
 
 }
