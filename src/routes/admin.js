@@ -24,6 +24,9 @@ router.put("/delete-product-type", adminController.DeleteProductType);
 router.get("/search-khachhang", adminController.SearchKH);
 router.get("/show-thongke-thang", adminController.ShowThongKeThang);
 router.get("/show-thongke-thang-truoc", adminController.ShowThongKeThangTruoc);
+router.get("/hach-toan-doi-soat-trong-thang", adminController.HachToanDoiSoatTrongThang);
+router.get("/hach-toan-doi-soat-thang-truoc", adminController.HachToanDoiSoatThangTruoc);
+router.get("/show-thong-ke-30ngay", adminController.ShowThongKe30Ngay);
 
 
 

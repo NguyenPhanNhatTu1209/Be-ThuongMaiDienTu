@@ -1126,8 +1126,6 @@ class KhachHangController {
         KhoiLuong,
         id_GoiShipping,
       };
-      console.log(update.KhoiLuong);
-      console.log(update.id_GoiShipping);
       var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
       if (result != null) {
         const roleDT = result.Role;
@@ -1145,7 +1143,10 @@ class KhachHangController {
           update.id_KhachHang = resultKH._doc._id;
           update.id_DoanhNghiep = resultGoiShipping._doc.IdCongTy;
           var ngayHetHanGoiKhachHang = resultKH._doc.NgayHetHan;
+          // var ngayThucTai = new Date();
+          // ngayThucTai.setDate(ngayThucTai.getDate());
           var ngayThucTai = Date.now();
+          console.log(ngayThucTai);
           var soLuongDonHangGoiKhachHang = resultKH._doc.SoDonHang;
           if (
             update.KhoiLuong > resultKH._doc.KhoiLuongToiDa ||
