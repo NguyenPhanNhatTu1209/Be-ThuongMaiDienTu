@@ -3,12 +3,15 @@ const GoiVanChuyen = require("../Models/GoiVanChuyen");
 const TaiKhoan = require("../Models/TaiKhoan");
 const GoiDoanhNghiep = require("../Models/GoiDoanhNghiep");
 const LoaiHangHoaSanPham = require("../Models/LoaiHangHoa");
+const KhachHang = require("../Models/KhachHang");
+
 const fetch = require('node-fetch');
 const {
   verifyToken,
   paymentMethodPackage,
   FormatDollar,
   sortObject,
+  RefundPayment,
 } = require("../Controllers/index");
 const Order = require("../Models/Order");
 const DonHangDichVu = require("../Models/DonHangDichVu");
@@ -1215,6 +1218,142 @@ class DoanhNghiepController {
       });
     }
   }
+// Delete enterprise/delete-donhang (paypal ==> refund)
+async HuyDonHangByDN(req, res, next) {
+  try {
+    var idDonHangKhachHang = req.body.idDonHang;
+    const token = req.get("Authorization").replace("Bearer ", "");
+    const _id = await verifyToken(token);
+    var update = { TrangThai: "Đã Hủy Đơn" };
+    var result = await TaiKhoan.findOne({ _id, Status: "ACTIVE" }); //muc dich la lay role
+    if (result != null) {
+      const roleDT = result.Role;
+      if (roleDT == "DOANHNGHIEP") {
+        var resultdonHang = await Order.findOne({ _id: idDonHangKhachHang });
+        var phuongThucThanhToan = resultdonHang._doc.ThanhToan;
+        if (phuongThucThanhToan == "PayPal") {
+          var idCongTy = resultdonHang._doc.id_DoanhNghiep;
+          var idKhachHang = resultdonHang._doc.id_KhachHang;
+          var resultKhachHang = await KhachHang.findOne({ _id: idKhachHang });
+          var resultDoanhNghiep = await DoanhNghiep.findOne({
+            _id: idCongTy,
+          });
+          var checkDN = resultDoanhNghiep._doc.id_account;
+          if(checkDN == result._id)
+          {
+            var soDonHangKH = resultKhachHang._doc.SoDonHang + 1;
+            var SoDonHangDN = resultDoanhNghiep._doc.SoDonHang + 1;
+            var updateKH = { SoDonHang: soDonHangKH };
+            var updateDN = { SoDonHang: SoDonHangDN };
+            var id_Order = resultdonHang._id;
+            var resultRefund;
+            RefundPayment(id_Order, async function (error, refund) {
+              if (error) {
+                resultRefund = error;
+                res.status(400).send({
+                  error: resultRefund,
+                });
+              } else {
+                resultRefund = refund;
+                await KhachHang.findOneAndUpdate(
+                  { _id: idKhachHang },
+                  updateKH,
+                  {
+                    new: true,
+                  }
+                );
+                await DoanhNghiep.findOneAndUpdate(
+                  { _id: idCongTy },
+                  updateDN,
+                  {
+                    new: true,
+                  }
+                );
+                var resultOrder = await Order.findOneAndUpdate(
+                  { _id: idDonHangKhachHang },
+                  update,
+                  {
+                    new: true,
+                  }
+                );
+                res.status(200).send({
+                  data: resultOrder,
+                  refund: resultRefund,
+                  error: "null",
+                });
+              }
+            });
+          }
+          else
+          {
+            res.status(404).send({
+              data: "",
+              error: "No Authentication",
+            });
+          }
+          
+        } else {
+          
+          var idCongTy = resultdonHang._doc.id_DoanhNghiep;
+          var idKhachHang = resultdonHang._doc.id_KhachHang;
+          var resultKhachHang = await KhachHang.findOne({ _id: idKhachHang });
+          var resultDoanhNghiep = await DoanhNghiep.findOne({
+            _id: idCongTy,
+          });
+          var checkDN = resultDoanhNghiep._doc.id_account;
+          if(checkDN == result._id)
+          {
+            var soDonHangKH = resultKhachHang._doc.SoDonHang + 1;
+            var SoDonHangDN = resultDoanhNghiep._doc.SoDonHang + 1;
+            var updateKH = { SoDonHang: soDonHangKH };
+            var updateDN = { SoDonHang: SoDonHangDN };
+            var id_Order = resultdonHang._id;
+            await KhachHang.findOneAndUpdate({ _id: idKhachHang }, updateKH, {
+              new: true,
+            });
+            await DoanhNghiep.findOneAndUpdate({ _id: idCongTy }, updateDN, {
+              new: true,
+            });
+            var resultOrder = await Order.findOneAndUpdate(
+              { _id: idDonHangKhachHang },
+              update,
+              {
+                new: true,
+              }
+            );
+            res.status(200).send({
+              data: resultOrder,
+              error: "null",
+            });
+          }
+          else
+          {
+            res.status(404).send({
+              data: "",
+              error: "No Authentication",
+            });
+          }
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "No Authentication",
+        });
+      }
+    } else {
+      res.status(404).send({
+        data: "",
+        error: "Not found user!",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      data: "",
+      error: error,
+    });
+  }
+}
 }
 
 module.exports = new DoanhNghiepController();
