@@ -625,7 +625,7 @@ class KhachHangController {
               var tmnCode = "JCO3SG7X";
               var secretKey = "BKPYNKKKBEAZCHZFHLIXKMXXCODHEVSU";
               var vnpUrl = "http://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-              var returnUrl = "http://54.255.93.14/me/vnpay_return";
+              var returnUrl = "https://be-b010.herokuapp.com/me/vnpay_return";
 
               var date = new Date();
 
@@ -900,7 +900,7 @@ class KhachHangController {
               var tmnCode = "JCO3SG7X";
               var secretKey = "BKPYNKKKBEAZCHZFHLIXKMXXCODHEVSU";
               var vnpUrl = "http://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-              var returnUrl = "http://54.255.93.14/me/vnpay_return_package";
+              var returnUrl = "https://be-b010.herokuapp.com/me/vnpay_return_package";
 
               var date = new Date();
 

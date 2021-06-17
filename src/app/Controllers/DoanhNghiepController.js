@@ -979,7 +979,7 @@ class DoanhNghiepController {
               var tmnCode = "JCO3SG7X";
               var secretKey = "BKPYNKKKBEAZCHZFHLIXKMXXCODHEVSU";
               var vnpUrl = "http://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-              var returnUrl = "http://localhost:3000/me/vnpay_return_package";
+              var returnUrl = "https://be-b010.herokuapp.com/me/vnpay_return_package";
 
               var date = new Date();
 
@@ -1049,6 +1049,168 @@ class DoanhNghiepController {
     } catch (error) {
       console.log(error);
       res.status(500).send({
+        error: error,
+      });
+    }
+  }
+  //enterprise/hach-toan-doi-soat-trong-thang
+  async HachToanDoiSoatTrongThang(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "DOANHNGHIEP") {
+          var resultTong = {
+            TienDuaDoanhNghiep: "",
+            TienLayDoanhNghiep: "",
+            TienGiamGia: "",
+            TienDoanhNghiepThuDuoc: "",
+            SoDonHang: "",
+          };
+          var resultDonHang = [];
+          var tienDoanhNghiep = 0;
+          var tienGiamGia = 0;
+          var soDonHang = 0;
+          var tienLayDoanhNghiep = 0;
+          var tienDuaDoanhNghiep = 0;
+          var ngayHienTai = new Date();
+          ngayHienTai.setDate(ngayHienTai.getDate());
+          var thanghientai = ngayHienTai.getMonth();
+          var doanhnghiep = await DoanhNghiep.findOne({
+            id_account: result._id,
+            TrangThai: "ACTIVE",
+          });
+          console.log(doanhnghiep)
+          var idDN = doanhnghiep._id;
+          var donHang = await Order.find({
+            id_DoanhNghiep: idDN,
+            $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],
+            TrangThai: "Đã Nhận Hàng",
+          });
+          var dem=0;
+          for (let i = 0; i < donHang.length; i++) {
+            var checkThang = donHang[i]._doc.updatedAt.getMonth();
+            if (thanghientai == checkThang) {
+              tienDoanhNghiep =
+                parseFloat(donHang[i]._doc.TongChiPhi) + tienDoanhNghiep;
+              soDonHang++;
+              tienGiamGia =
+                parseFloat(donHang[i]._doc.TienGiamGia) + tienGiamGia;
+              resultDonHang[dem] = donHang[i];
+              dem++;
+            }
+          }
+          tienDuaDoanhNghiep = tienDoanhNghiep + tienGiamGia;
+          tienLayDoanhNghiep = (tienDuaDoanhNghiep * 5) / 100;
+          resultTong.TienDoanhNghiepThuDuoc = tienDoanhNghiep.toString();
+          resultTong.TienGiamGia = tienGiamGia.toString();
+          resultTong.SoDonHang = soDonHang.toString();
+          resultTong.TienLayDoanhNghiep = tienLayDoanhNghiep.toString();
+          resultTong.TienDuaDoanhNghiep = tienDuaDoanhNghiep.toString();
+          res.status(200).send({
+            dataOrder: resultDonHang,
+            dataDN: resultTong,
+            error: "null",
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
+    }
+  }
+  //enterprise/hach-toan-doi-soat-thang-truoc
+  async HachToanDoiSoatThangTruoc(req, res, next) {
+    try {
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "DOANHNGHIEP") {
+          var resultTong = {
+            TienDuaDoanhNghiep: "",
+            TienLayDoanhNghiep: "",
+            TienGiamGia: "",
+            TienDoanhNghiepThuDuoc: "",
+            SoDonHang: "",
+          };
+          var resultDonHang = [];
+          var tienDoanhNghiep = 0;
+          var tienGiamGia = 0;
+          var soDonHang = 0;
+          var tienLayDoanhNghiep = 0;
+          var tienDuaDoanhNghiep = 0;
+          var ngayHienTai = new Date();
+          ngayHienTai.setDate(ngayHienTai.getDate());
+          var thanghientai = ngayHienTai.getMonth()-1;
+          var doanhnghiep = await DoanhNghiep.findOne({
+            id_account: result._id,
+            TrangThai: "ACTIVE",
+          });
+          console.log(doanhnghiep)
+          var idDN = doanhnghiep._id;
+          var donHang = await Order.find({
+            id_DoanhNghiep: idDN,
+            $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],
+            TrangThai: "Đã Nhận Hàng",
+          });
+          var dem=0;
+          for (let i = 0; i < donHang.length; i++) {
+            var checkThang = donHang[i]._doc.updatedAt.getMonth();
+            if (thanghientai == checkThang) {
+              tienDoanhNghiep =
+                parseFloat(donHang[i]._doc.TongChiPhi) + tienDoanhNghiep;
+              soDonHang++;
+              tienGiamGia =
+                parseFloat(donHang[i]._doc.TienGiamGia) + tienGiamGia;
+              resultDonHang[dem] = donHang[i];
+              dem++;
+            }
+          }
+          tienDuaDoanhNghiep = tienDoanhNghiep + tienGiamGia;
+          tienLayDoanhNghiep = (tienDuaDoanhNghiep * 5) / 100;
+          resultTong.TienDoanhNghiepThuDuoc = tienDoanhNghiep.toString();
+          resultTong.TienGiamGia = tienGiamGia.toString();
+          resultTong.SoDonHang = soDonHang.toString();
+          resultTong.TienLayDoanhNghiep = tienLayDoanhNghiep.toString();
+          resultTong.TienDuaDoanhNghiep = tienDuaDoanhNghiep.toString();
+          res.status(200).send({
+            dataOrder: resultDonHang,
+            dataDN: resultTong,
+            error: "null",
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        data: "",
         error: error,
       });
     }

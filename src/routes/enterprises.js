@@ -31,6 +31,8 @@ router.get("/show-order-in-one-week-by-enterprise", doanhnghiepController.ShowOr
 router.get("/show-order-in-three-month-by-enterprise", doanhnghiepController.ShowOrderByThreeMonth);
 router.get("/show-order-in-one-year-by-enterprise", doanhnghiepController.ShowOrderByOneYear);
 router.post("/create_payment_vnpayurl_package", doanhnghiepController.CreatePaymentVnpayurlPackage);
+router.get("/hach-toan-doi-soat-trong-thang", doanhnghiepController.HachToanDoiSoatTrongThang);
+router.get("/hach-toan-doi-soat-thang-truoc", doanhnghiepController.HachToanDoiSoatThangTruoc);
 
 
 

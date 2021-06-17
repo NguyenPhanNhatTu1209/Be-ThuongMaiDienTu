@@ -314,6 +314,7 @@ class AdminController {
           var check = await DoanhNghiep.findOne({ _id: idDoanhNghiep });
           if (check != null) {
             var EmailDN = check.Email;
+            console.log(EmailDN);
             var smtpTransport = nodemailer.createTransport({
               service: "gmail", //smtp.gmail.com  //in place of service use host...
               secure: false, //true
@@ -1352,6 +1353,7 @@ class AdminController {
             TienGiamGia: "",
             TienDoanhNghiepThuDuoc: "",
             SoDonHang: "",
+            Logo: "",
           };
           var resultDonHang = [];
           var tienDoanhNghiep = 0;
@@ -1362,13 +1364,7 @@ class AdminController {
           var ngayHienTai = new Date();
           ngayHienTai.setDate(ngayHienTai.getDate());
           var thanghientai = ngayHienTai.getMonth();
-          var ngayBatDauXet = new Date();
-          var ngayKetThucXet = new Date();
-          ngayBatDauXet.setDate(ngayBatDauXet.getDate()-30);
-          console.log(ngayBatDauXet);
-          var timeStart = ngayBatDauXet.getTime();
-          var timeEnd = ngayKetThucXet.getTime();
-          var doanhnghiep = await DoanhNghiep.find({
+          var doanhnghiep = await DoanhNghiep.findOne({
             _id: idDN,
             TrangThai: "ACTIVE",
           });
@@ -1380,25 +1376,25 @@ class AdminController {
           var dem=0;
           for (let i = 0; i < donHang.length; i++) {
             var checkThang = donHang[i]._doc.updatedAt.getMonth();
-            if(donHang[i]._doc.updatedAt.getTime()>=timeStart && donHang[i]._doc.updatedAt.getTime() < timeEnd)
-              {
-                tienDoanhNghiep =
-                  parseFloat(donHang[i]._doc.TongChiPhi) + tienDoanhNghiep;
-                soDonHang++;
-                tienGiamGia =
-                  parseFloat(donHang[i]._doc.TienGiamGia) + tienGiamGia;
-                resultDonHang[dem] = donHang[i];
-                dem++;
-              }
-            // if (thanghientai == checkThang) {
-            //   tienDoanhNghiep =
-            //     parseFloat(donHang[i]._doc.TongChiPhi) + tienDoanhNghiep;
-            //   soDonHang++;
-            //   tienGiamGia =
-            //     parseFloat(donHang[i]._doc.TienGiamGia) + tienGiamGia;
-            //   resultDonHang[dem] = donHang[i];
-            //   dem++;
-            // }
+            // if(donHang[i]._doc.updatedAt.getTime()>=timeStart && donHang[i]._doc.updatedAt.getTime() < timeEnd)
+            //   {
+            //     tienDoanhNghiep =
+            //       parseFloat(donHang[i]._doc.TongChiPhi) + tienDoanhNghiep;
+            //     soDonHang++;
+            //     tienGiamGia =
+            //       parseFloat(donHang[i]._doc.TienGiamGia) + tienGiamGia;
+            //     resultDonHang[dem] = donHang[i];
+            //     dem++;
+            //   }
+            if (thanghientai == checkThang) {
+              tienDoanhNghiep =
+                parseFloat(donHang[i]._doc.TongChiPhi) + tienDoanhNghiep;
+              soDonHang++;
+              tienGiamGia =
+                parseFloat(donHang[i]._doc.TienGiamGia) + tienGiamGia;
+              resultDonHang[dem] = donHang[i];
+              dem++;
+            }
           }
           tienDuaDoanhNghiep = tienDoanhNghiep + tienGiamGia;
           tienLayDoanhNghiep = (tienDuaDoanhNghiep * 5) / 100;
@@ -1408,6 +1404,7 @@ class AdminController {
           resultTong.SoDonHang = soDonHang.toString();
           resultTong.TienLayDoanhNghiep = tienLayDoanhNghiep.toString();
           resultTong.TienDuaDoanhNghiep = tienDuaDoanhNghiep.toString();
+          resultTong.Logo = doanhnghiep.Logo;
           res.status(200).send({
             dataOrder: resultDonHang,
             dataDN: resultTong,
@@ -1451,6 +1448,7 @@ class AdminController {
             TienGiamGia: "",
             TienDoanhNghiepThuDuoc: "",
             SoDonHang:"",
+            Logo: "",
           };
           var tienDoanhNghiep = 0;
           var tienGiamGia = 0;
@@ -1461,7 +1459,7 @@ class AdminController {
           var ngayHienTai = new Date();
           ngayHienTai.setDate(ngayHienTai.getDate());
           var thanghientai = ngayHienTai.getMonth() - 1;
-          var doanhnghiep = await DoanhNghiep.find({
+          var doanhnghiep = await DoanhNghiep.findOne({
             _id: idDN,
             TrangThai: "ACTIVE",
           });
