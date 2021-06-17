@@ -314,6 +314,7 @@ class AdminController {
           var check = await DoanhNghiep.findOne({ _id: idDoanhNghiep });
           if (check != null) {
             var EmailDN = check.Email;
+            console.log(EmailDN);
             var smtpTransport = nodemailer.createTransport({
               service: "gmail", //smtp.gmail.com  //in place of service use host...
               secure: false, //true
@@ -757,7 +758,170 @@ class AdminController {
       });
     }
   }
-  //get admin/show-thongke-thang
+  //get admin/show-thongke-thang-time
+  async ShowThongKeThangTime(req, res, next) {
+    try {
+      // var ngayBatDauXet = req.query.NgayBatDauXet;
+      // var ngayKetThucXet = req.query.NgayKetThucXet;
+      const token = req.get("Authorization").replace("Bearer ", "");
+      const _id = await verifyToken(token);
+      var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+      if (result != null) {
+        const roleDT = result.Role;
+        if (roleDT == "ADMIN") {
+          var doanhnghiep = await DoanhNghiep.find({ TrangThai: "ACTIVE" });
+          var resultThongKeDN = [];
+          var resultTong = {
+            TongTien: "",
+            TongTienGiam: "",
+            TongDonHang: "",
+            TongTienDuaDoanhNghiep: "",
+          };
+          var tienDoanhNghiep;
+          var tienGiamGia;
+          var soDonHang;
+          var tongTienDoanhNghiep = 0;
+          var tongTienGiamGia = 0;
+          var tongSoDonHang = 0;
+          var tienLayDoanhNghiep = 0;
+          var tienDuaDoanhNghiep = 0;
+          var ngayHienTai = new Date(); // bỏ
+          ngayHienTai.setDate(ngayHienTai.getDate()); // bỏ
+          var ngayBatDauXet = new Date();
+          var ngayKetThucXet = new Date();
+          ngayBatDauXet.setDate(ngayBatDauXet.getDate()-30);
+          var timeStart = ngayBatDauXet.getTime();
+          var timeEnd = ngayKetThucXet.getTime();
+          var thanghientai = ngayHienTai.getMonth(); // bỏ
+          for (let i = 0; i < doanhnghiep.length; i++) {
+            tienDoanhNghiep = 0;
+            tienGiamGia = 0;
+            soDonHang = 0;
+            tienLayDoanhNghiep = 0;
+            tienDuaDoanhNghiep = 0;
+            var IDDoanhNgiep = doanhnghiep[i]._doc._id;
+            var donHang = await Order.find({
+              id_DoanhNghiep: IDDoanhNgiep,
+              $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],
+              TrangThai: "Đã Nhận Hàng",
+            });
+            var updateDN = {
+              idDoanhNgiep: "",
+              TenDoanhNghiep: "",
+              TienDuaDoanhNghiep: "",
+              TienLayDoanhNghiep: "",
+              TienDoanhNghiep: "",
+              TienGiamGia: "",
+              SoDonHang: "",
+              LogoDoanhNghiep: "",
+            };
+            console.log(timeStart);
+
+            for (let j = 0; j < donHang.length; j++) {
+              var checkThang = donHang[j]._doc.updatedAt.getMonth(); // bỏ
+              if(donHang[j]._doc.updatedAt.getTime()>=timeStart && donHang[j]._doc.updatedAt.getTime() < timeEnd)
+              {
+                  tienDoanhNghiep =
+                  parseFloat(donHang[j]._doc.TongChiPhi) + tienDoanhNghiep;
+                  soDonHang++;
+                  tienGiamGia =
+                  parseFloat(donHang[j]._doc.TienGiamGia) + tienGiamGia;
+
+              }
+              // if (thanghientai == checkThang) {
+              //   tienDoanhNghiep =
+              //     parseFloat(donHang[j]._doc.TongChiPhi) + tienDoanhNghiep;
+              //   soDonHang++;
+              //   tienGiamGia =
+              //     parseFloat(donHang[j]._doc.TienGiamGia) + tienGiamGia;
+              // }
+            }
+            updateDN.idDoanhNgiep = IDDoanhNgiep;
+            updateDN.TienDoanhNghiep = tienDoanhNghiep.toString();
+            updateDN.TienGiamGia = tienGiamGia.toString();
+            updateDN.SoDonHang = soDonHang.toString();
+            updateDN.LogoDoanhNghiep = doanhnghiep[i]._doc.Logo;
+            updateDN.TenDoanhNghiep = doanhnghiep[i]._doc.TenDoanhNghiep;
+            tienDuaDoanhNghiep = tienDoanhNghiep + tienGiamGia;
+            tienLayDoanhNghiep = (tienDuaDoanhNghiep * 5) / 100;
+            updateDN.TienDuaDoanhNghiep = tienDuaDoanhNghiep.toString();
+            updateDN.TienLayDoanhNghiep = tienLayDoanhNghiep.toString();
+            tongTienDoanhNghiep = tongTienDoanhNghiep + tienDoanhNghiep;
+            tongSoDonHang = soDonHang + tongSoDonHang;
+            tongTienGiamGia = tongTienGiamGia + tienGiamGia;
+            resultThongKeDN[i] = updateDN;
+          }
+          resultTong.TongTien = tongTienDoanhNghiep.toString();
+          resultTong.TongTienGiam = tongTienGiamGia.toString();
+          resultTong.TongDonHang = tongSoDonHang.toString();
+          resultTong.TongTienDuaDoanhNghiep = (
+            tongTienDoanhNghiep + tongTienGiamGia
+          ).toString();
+          var donHangDichVu = await DonHangDichVu.find({
+            $or: [
+              { ThanhToan: "PayPal" },
+              { ThanhToan: "VnPay" },
+              { ThanhToan: "Đã Thanh Toán" },
+            ],
+          });
+          var tienGoiDichVu = 0;
+          var soGoiDaMua = 0;
+          for (let i = 0; i < donHangDichVu.length; i++) {
+            var checkThang = donHangDichVu[i]._doc.updatedAt.getMonth();
+            
+            if(donHangDichVu[i]._doc.updatedAt.getTime()>=timeStart && donHangDichVu[i]._doc.updatedAt.getTime()< timeEnd)
+            {
+              tienGoiDichVu =
+                parseFloat(donHangDichVu[i]._doc.ChiPhi) + tienGoiDichVu;
+              soGoiDaMua++;
+            }
+            // if (checkThang == thanghientai) {
+            //   tienGoiDichVu =
+            //     parseFloat(donHangDichVu[i]._doc.ChiPhi) + tienGoiDichVu;
+            //   soGoiDaMua++;
+            // }
+          }
+          var resultGoi = {
+            TienGoiDichVu: tienGoiDichVu.toString(),
+            SoGoiDaBan: soGoiDaMua.toString(),
+          };
+          var tongTatCaTien =
+            tienGoiDichVu +
+            tongTienDoanhNghiep +
+            ((tongTienDoanhNghiep + tongTienGiamGia) * 5) / 100;
+          var tienLoi = tongTatCaTien - tongTienGiamGia - tongTienDoanhNghiep;
+          var resultTongTien = {
+            TongTatCaTien: tongTatCaTien.toString(),
+            TienLoi: tienLoi.toString(),
+          };
+          res.status(200).send({
+            dataDN: resultThongKeDN,
+            dataTongDN: resultTong,
+            dataGoi: resultGoi,
+            dataTongTien: resultTongTien,
+            error: "null",
+          });
+        } else {
+          res.status(404).send({
+            data: "",
+            error: "No Authentication",
+          });
+        }
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "Not found user!",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        data: "",
+        error: error,
+      });
+    }
+  }
+  //get admin/show-thongke-thang-time
   async ShowThongKeThang(req, res, next) {
     try {
       const token = req.get("Authorization").replace("Bearer ", "");
@@ -838,6 +1002,7 @@ class AdminController {
           resultTong.TongTienDuaDoanhNghiep = (
             tongTienDoanhNghiep + tongTienGiamGia
           ).toString();
+          resultTong.TienLoi5 = (tongTienGiamGia+tongTienDoanhNghiep)*5/100;
           var donHangDichVu = await DonHangDichVu.find({
             $or: [
               { ThanhToan: "PayPal" },
@@ -861,9 +1026,8 @@ class AdminController {
           };
           var tongTatCaTien =
             tienGoiDichVu +
-            tongTienDoanhNghiep +
-            ((tongTienDoanhNghiep + tongTienGiamGia) * 5) / 100;
-          var tienLoi = tongTatCaTien - tongTienGiamGia - tongTienDoanhNghiep;
+            tongTienDoanhNghiep;
+          var tienLoi = tienGoiDichVu+(tongTienDoanhNghiep+tongTienGiamGia)*5/100 - tongTienGiamGia;
           var resultTongTien = {
             TongTatCaTien: tongTatCaTien.toString(),
             TienLoi: tienLoi.toString(),
@@ -896,7 +1060,7 @@ class AdminController {
     }
   }
   //get admin/show-thongke-thang-truoc
-  async ShowThongKeThangTruoc(req, res, next) {
+  async ShowThongKeThangTruocTime(req, res, next) {
     try {
       const token = req.get("Authorization").replace("Bearer ", "");
       const _id = await verifyToken(token);
@@ -911,6 +1075,7 @@ class AdminController {
             TongTienGiam: "",
             TongDonHang: "",
             TongTienDuaDoanhNghiep: "",
+            TienLoi5: "",
           };
           var tienDoanhNghiep;
           var tienGiamGia;
@@ -1033,7 +1198,144 @@ class AdminController {
       });
     }
   }
-
+ //get admin/show-thongke-thang-truoc
+ async ShowThongKeThangTruoc(req, res, next) {
+  try {
+    const token = req.get("Authorization").replace("Bearer ", "");
+    const _id = await verifyToken(token);
+    var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+    if (result != null) {
+      const roleDT = result.Role;
+      if (roleDT == "ADMIN") {
+        var doanhnghiep = await DoanhNghiep.find({ TrangThai: "ACTIVE" });
+        var resultThongKeDN = [];
+        var resultTong = {
+          TongTien: "",
+          TongTienGiam: "",
+          TongDonHang: "",
+          TongTienDuaDoanhNghiep: "",
+        };
+        var tienDoanhNghiep;
+        var tienGiamGia;
+        var soDonHang;
+        var tongTienDoanhNghiep = 0;
+        var tongTienGiamGia = 0;
+        var tongSoDonHang = 0;
+        var tienLayDoanhNghiep = 0;
+        var tienDuaDoanhNghiep = 0;
+        var ngayHienTai = new Date();
+        ngayHienTai.setDate(ngayHienTai.getDate());
+        var thanghientai = ngayHienTai.getMonth() - 1;
+        for (let i = 0; i < doanhnghiep.length; i++) {
+          tienDoanhNghiep = 0;
+          tienGiamGia = 0;
+          soDonHang = 0;
+          tienLayDoanhNghiep = 0;
+          tienDuaDoanhNghiep = 0;
+          var IDDoanhNgiep = doanhnghiep[i]._doc._id;
+          var donHang = await Order.find({
+            id_DoanhNghiep: IDDoanhNgiep,
+            $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],
+            TrangThai: "Đã Nhận Hàng",
+          });
+          var updateDN = {
+            idDoanhNgiep: "",
+            TenDoanhNghiep: "",
+            TienDuaDoanhNghiep: "",
+            TienLayDoanhNghiep: "",
+            TienDoanhNghiep: "",
+            TienGiamGia: "",
+            SoDonHang: "",
+            LogoDoanhNghiep: "",
+          };
+          for (let j = 0; j < donHang.length; j++) {
+            var checkThang = donHang[j]._doc.updatedAt.getMonth();
+            if (thanghientai == checkThang) {
+              tienDoanhNghiep =
+                parseFloat(donHang[j]._doc.TongChiPhi) + tienDoanhNghiep;
+              soDonHang++;
+              tienGiamGia =
+                parseFloat(donHang[j]._doc.TienGiamGia) + tienGiamGia;
+            }
+          }
+          updateDN.idDoanhNgiep = IDDoanhNgiep;
+          updateDN.TienDoanhNghiep = tienDoanhNghiep.toString();
+          updateDN.TienGiamGia = tienGiamGia.toString();
+          updateDN.SoDonHang = soDonHang.toString();
+          updateDN.LogoDoanhNghiep = doanhnghiep[i]._doc.Logo;
+          updateDN.TenDoanhNghiep = doanhnghiep[i]._doc.TenDoanhNghiep;
+          tienDuaDoanhNghiep = tienDoanhNghiep + tienGiamGia;
+          tienLayDoanhNghiep = (tienDuaDoanhNghiep * 5) / 100;
+          updateDN.TienDuaDoanhNghiep = tienDuaDoanhNghiep.toString();
+          updateDN.TienLayDoanhNghiep = tienLayDoanhNghiep.toString();
+          tongTienDoanhNghiep = tongTienDoanhNghiep + tienDoanhNghiep;
+          tongSoDonHang = soDonHang + tongSoDonHang;
+          tongTienGiamGia = tongTienGiamGia + tienGiamGia;
+          resultThongKeDN[i] = updateDN;
+        }
+        resultTong.TongTien = tongTienDoanhNghiep.toString();
+        resultTong.TongTienGiam = tongTienGiamGia.toString();
+        resultTong.TongDonHang = tongSoDonHang.toString();
+        resultTong.TongTienDuaDoanhNghiep = (
+          tongTienDoanhNghiep + tongTienGiamGia
+        ).toString();
+        resultTong.TienLoi5 = (tongTienGiamGia+tongTienDoanhNghiep)*5/100;
+        var donHangDichVu = await DonHangDichVu.find({
+          $or: [
+            { ThanhToan: "PayPal" },
+            { ThanhToan: "VnPay" },
+            { ThanhToan: "Đã Thanh Toán" },
+          ],
+        });
+        var tienGoiDichVu = 0;
+        var soGoiDaMua = 0;
+        for (let i = 0; i < donHangDichVu.length; i++) {
+          var checkThang = donHangDichVu[i]._doc.updatedAt.getMonth();
+          if (checkThang == thanghientai) {
+            tienGoiDichVu =
+              parseFloat(donHangDichVu[i]._doc.ChiPhi) + tienGoiDichVu;
+            soGoiDaMua++;
+          }
+        }
+        var resultGoi = {
+          TienGoiDichVu: tienGoiDichVu.toString(),
+          SoGoiDaBan: soGoiDaMua.toString(),
+        };
+        var tongTatCaTien =
+          tienGoiDichVu +
+          tongTienDoanhNghiep;
+        var tienLoi = tienGoiDichVu+(tongTienDoanhNghiep+tongTienGiamGia)*5/100 - tongTienGiamGia;
+        var resultTongTien = {
+          TongTatCaTien: tongTatCaTien.toString(),
+          TienLoi: tienLoi.toString(),
+        };
+        res.status(200).send({
+          dataDN: resultThongKeDN,
+          dataTongDN: resultTong,
+          dataGoi: resultGoi,
+          dataTongTien: resultTongTien,
+          error: "null",
+        });
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "No Authentication",
+        });
+      }
+    } else {
+      res.status(404).send({
+        data: "",
+        error: "Not found user!",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      data: "",
+      error: error,
+    });
+  }
+}
   //get admin/hoach-toan-doi-soat-trong-thang
   async HachToanDoiSoatTrongThang(req, res, next) {
     try {
@@ -1045,7 +1347,6 @@ class AdminController {
         if (roleDT == "ADMIN") {
           var idDN = req.query.IDDoanhNghiep;
           var resultTong = {
-            TenDoanhNghiep: "",
             TienDuaDoanhNghiep: "",
             TienLayDoanhNghiep: "",
             TienGiamGia: "",
@@ -1061,10 +1362,10 @@ class AdminController {
           var ngayHienTai = new Date();
           ngayHienTai.setDate(ngayHienTai.getDate());
           var thanghientai = ngayHienTai.getMonth();
-          var doanhnghiep = await DoanhNghiep.find({
-            _id: idDN,
-            TrangThai: "ACTIVE",
-          });
+          // var doanhnghiep = await DoanhNghiep.findOne({
+          //   _id: idDN,
+          //   TrangThai: "ACTIVE",
+          // });
           var donHang = await Order.find({
             id_DoanhNghiep: idDN,
             $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],
@@ -1073,6 +1374,16 @@ class AdminController {
           var dem=0;
           for (let i = 0; i < donHang.length; i++) {
             var checkThang = donHang[i]._doc.updatedAt.getMonth();
+            // if(donHang[i]._doc.updatedAt.getTime()>=timeStart && donHang[i]._doc.updatedAt.getTime() < timeEnd)
+            //   {
+            //     tienDoanhNghiep =
+            //       parseFloat(donHang[i]._doc.TongChiPhi) + tienDoanhNghiep;
+            //     soDonHang++;
+            //     tienGiamGia =
+            //       parseFloat(donHang[i]._doc.TienGiamGia) + tienGiamGia;
+            //     resultDonHang[dem] = donHang[i];
+            //     dem++;
+            //   }
             if (thanghientai == checkThang) {
               tienDoanhNghiep =
                 parseFloat(donHang[i]._doc.TongChiPhi) + tienDoanhNghiep;
@@ -1085,12 +1396,13 @@ class AdminController {
           }
           tienDuaDoanhNghiep = tienDoanhNghiep + tienGiamGia;
           tienLayDoanhNghiep = (tienDuaDoanhNghiep * 5) / 100;
-          resultTong.TenDoanhNghiep = doanhnghiep.TenDoanhNghiep;
+          // resultTong.TenDoanhNghiep = doanhnghiep.TenDoanhNghiep;
           resultTong.TienDoanhNghiepThuDuoc = tienDoanhNghiep.toString();
           resultTong.TienGiamGia = tienGiamGia.toString();
           resultTong.SoDonHang = soDonHang.toString();
           resultTong.TienLayDoanhNghiep = tienLayDoanhNghiep.toString();
           resultTong.TienDuaDoanhNghiep = tienDuaDoanhNghiep.toString();
+          // resultTong.Logo = doanhnghiep.Logo;
           res.status(200).send({
             dataOrder: resultDonHang,
             dataDN: resultTong,
@@ -1128,7 +1440,6 @@ class AdminController {
           var idDN = req.query.IDDoanhNghiep;
           var resultDonHang = [];
           var resultTong = {
-            TenDoanhNghiep: "",
             TienDuaDoanhNghiep: "",
             TienLayDoanhNghiep: "",
             TienGiamGia: "",
@@ -1144,10 +1455,10 @@ class AdminController {
           var ngayHienTai = new Date();
           ngayHienTai.setDate(ngayHienTai.getDate());
           var thanghientai = ngayHienTai.getMonth() - 1;
-          var doanhnghiep = await DoanhNghiep.find({
-            _id: idDN,
-            TrangThai: "ACTIVE",
-          });
+          // var doanhnghiep = await DoanhNghiep.findOne({
+          //   _id: idDN,
+          //   TrangThai: "ACTIVE",
+          // });
           var donHang = await Order.find({
             id_DoanhNghiep: idDN,
             $or: [{ ThanhToan: "PayPal" }, { ThanhToan: "VnPay" }],
@@ -1167,7 +1478,7 @@ class AdminController {
           }
           tienDuaDoanhNghiep = tienDoanhNghiep + tienGiamGia;
           tienLayDoanhNghiep = (tienDuaDoanhNghiep * 5) / 100;
-          resultTong.TenDoanhNghiep = doanhnghiep.TenDoanhNghiep;
+          // resultTong.TenDoanhNghiep = doanhnghiep.TenDoanhNghiep;
           resultTong.TienDoanhNghiepThuDuoc = tienDoanhNghiep.toString();
           resultTong.TienGiamGia = tienGiamGia.toString();
           resultTong.SoDonHang = soDonHang.toString();
@@ -1249,6 +1560,46 @@ async ShowThongKe30Ngay(req, res, next) {
           }
           result[i] = update;
         }
+        res.status(200).send({
+          data: result,
+          error: "null",
+        });
+      } else {
+        res.status(404).send({
+          data: "",
+          error: "No Authentication",
+        });
+      }
+    } else {
+      res.status(404).send({
+        data: "",
+        error: "Not found user!",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      data: "",
+      error: error,
+    });
+  }
+}
+//get admin/show-ten-logo
+async ShowTenLogo(req, res, next) {
+  try {
+    const token = req.get("Authorization").replace("Bearer ", "");
+    const _id = await verifyToken(token);
+    var result = await TaiKhoan.findOne({ _id }); //muc dich la lay role
+    if (result != null) {
+      const roleDT = result.Role;
+      if (roleDT == "ADMIN") {
+        var idDN = req.query.IDDoanhNghiep;
+        var doanhnghiep = await DoanhNghiep.findOne({_id: idDN});
+        var result = {
+          TenDoanhNghiep: doanhnghiep.TenDoanhNghiep,
+          Logo: doanhnghiep.Logo,
+        }
+
         res.status(200).send({
           data: result,
           error: "null",

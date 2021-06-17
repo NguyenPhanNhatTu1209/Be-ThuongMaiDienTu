@@ -12,7 +12,7 @@ async function createToken(idUser) {
 async function createTokenTime(idUser) {
   const token = await jwt.sign(
     {
-      exp: Math.floor(Date.now() / 1000) + 60,
+      exp: Math.floor(Date.now() / 1000) + 60*5,
       data: idUser,
     },
     process.env.ACCESS_TOKEN
@@ -54,8 +54,8 @@ function paymentMethod(price, idDonHang, next) {
       payment_method: "paypal",
     },
     redirect_urls: {
-      return_url: `http://54.255.93.14/me/success?price=${price}&idDonHang=${idDonHang}`,
-      cancel_url: "http://54.255.93.14/me/cancel",
+      return_url: `https://be-b010.herokuapp.com/me/success?price=${price}&idDonHang=${idDonHang}`,
+      cancel_url: "https://be-b010.herokuapp.com/me/cancel",
     },
     transactions: [
       {
@@ -90,8 +90,8 @@ function paymentMethodPackage(price, idDonHang, next) {
       payment_method: "paypal",
     },
     redirect_urls: {
-      return_url: `http://54.255.93.14/me/successPackageBill?price=${price}&idDonHang=${idDonHang}`,
-      cancel_url: "http://54.255.93.14/me/cancelPackageBill",
+      return_url: `https://be-b010.herokuapp.com/me/successPackageBill?price=${price}&idDonHang=${idDonHang}`,
+      cancel_url: "https://be-b010.herokuapp.com/me/cancelPackageBill",
     },
     transactions: [
       {
