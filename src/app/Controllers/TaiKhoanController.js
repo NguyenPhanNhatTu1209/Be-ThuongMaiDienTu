@@ -121,7 +121,8 @@ class TaiKhoanController {
     try {
       const token = req.params.token;
       const data = await verifyToken(token);
-      const _id = data.data;
+      const _id = data;
+      console.log(_id);
       var result = await TaiKhoan.findOne({ _id });
       if (result != null) {
         var update = { Status: "ACTIVE" };
