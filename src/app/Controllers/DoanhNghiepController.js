@@ -193,6 +193,7 @@ class DoanhNghiepController {
             });
             var tenHangHoa = productType._doc.LoaiHangHoa;
             mangShippingPackage[i]._doc.LoaiHangHoa = tenHangHoa;
+            mangShippingPackage[i]._doc.SoKyGoi = productType._doc.SoKy;
           }
           res.status(200).send({
             data: mangShippingPackage,

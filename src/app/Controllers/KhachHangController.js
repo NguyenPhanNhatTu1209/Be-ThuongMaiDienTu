@@ -1058,6 +1058,8 @@ class KhachHangController {
           mangShippingPackage[i]._doc.TenDoanhNghiep = congTy.TenDoanhNghiep;
           mangShippingPackage[i]._doc.Logo = congTy.Logo;
           mangShippingPackage[i]._doc.LoaiHangHoa = tenHangHoa;
+          mangShippingPackage[i]._doc.SoKyGoi = productType._doc.SoKy;
+
         }
         res.status(200).send({
           data: mangShippingPackage,
