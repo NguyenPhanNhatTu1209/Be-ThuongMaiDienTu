@@ -54,6 +54,7 @@ class TaiKhoanController {
       const { Email, Password, TenKhachHang, SoDienThoai, DiaChi } = req.body;
       const Role = "KHACHHANG";
       const result = await TaiKhoan.findOne({ Email });
+      console.log(result);
       if (result == null) {
         const hashPassword = await bcrypt.hash(Password, 5);
         const account = await TaiKhoan.create({
@@ -70,7 +71,7 @@ class TaiKhoanController {
           id_account,
         });
 
-        const token = await createTokenTime(`${id_account}`);
+        const token = await createToken(`${id_account}`);
         var smtpTransport = nodemailer.createTransport({
           service: "gmail", //smtp.gmail.com  //in place of service use host...
           secure: false, //true
@@ -83,7 +84,7 @@ class TaiKhoanController {
             rejectUnauthorized: false,
           },
         });
-        var url = `http://${req.headers.host}/auth/verify-email/${token}`;
+        var url = `https://be-b010.herokuapp.com/auth/verify-email/${token}`;
         console.log(customer._doc.Email);
         var mailOptions = {
           to: customer._doc.Email,
@@ -175,7 +176,7 @@ class TaiKhoanController {
           Logo: urlLogo,
           TrangThai: "INACTIVE",
         });
-        const token = await createTokenTime(`${id_account}`);
+        const token = await createToken(`${id_account}`);
         var smtpTransport = nodemailer.createTransport({
           service: "gmail", //smtp.gmail.com  //in place of service use host...
           secure: false, //true
@@ -188,7 +189,7 @@ class TaiKhoanController {
             rejectUnauthorized: false,
           },
         });
-        var url = `http://${req.headers.host}/auth/verify-email/${token}`;
+        var url = `https://be-b010.herokuapp.com/auth/verify-email/${token}`;
         var mailOptions = {
           to: doanhNghiep._doc.Email,
           from: process.env.EmailAdmin,
@@ -240,7 +241,7 @@ class TaiKhoanController {
             rejectUnauthorized: false,
           },
         });
-        var url = `http://${req.headers.host}/auth/reset-password/${token}`;
+        var url = `https://be-b010.herokuapp.com/auth/reset-password/${token}`;
         var mailOptions = {
           to: result.Email,
           from: process.env.EmailAdmin,
