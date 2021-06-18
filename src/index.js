@@ -13,15 +13,8 @@ const route = require("./routes");
 db.connect(process.env.DB_URL);
 paypal.connect(process.env.ID_Client, process.env.Secret);
 
-app.use(cors()); 
-
-//app.use(express.static(path.join(__dirname, '/img')));
-app.use(express.json());
-app.use(busboy());
-app.use(bodyParser.urlencoded({ extended: false }));
-
 const corsOptions ={
-  origin: ['https://ec18b010-superhub.web.app', 'http://localhost:4200'],
+  origin: '*',
   credentials: true,         
   optionSuccessStatus: 200,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -34,6 +27,12 @@ const corsOptions ={
   ], 
   preflightContinue: false 
 }
+app.use(cors(corsOptions)); 
+
+//app.use(express.static(path.join(__dirname, '/img')));
+app.use(express.json());
+app.use(busboy());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 route(app);
 
