@@ -27,7 +27,7 @@ const corsOptions ={
   ], 
   preflightContinue: false 
 }
-app.use(cors(corsOptions)); 
+app.use(cors()); 
 
 //app.use(express.static(path.join(__dirname, '/img')));
 app.use(express.json());
