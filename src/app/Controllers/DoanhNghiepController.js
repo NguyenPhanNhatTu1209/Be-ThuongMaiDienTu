@@ -193,6 +193,7 @@ class DoanhNghiepController {
             });
             var tenHangHoa = productType._doc.LoaiHangHoa;
             mangShippingPackage[i]._doc.LoaiHangHoa = tenHangHoa;
+            mangShippingPackage[i]._doc.SoKyGoi = productType._doc.SoKy;
           }
           res.status(200).send({
             data: mangShippingPackage,
@@ -898,7 +899,7 @@ class DoanhNghiepController {
       if (result != null) {
         const roleDT = result.Role;
         if (roleDT == "DOANHNGHIEP") {
-          var resultLoaiSanPham = await LoaiHangHoaSanPham.find();
+          var resultLoaiSanPham = await LoaiHangHoaSanPham.find({Status: "ACTIVE" });
           res.status(200).send({
             data: resultLoaiSanPham,
           });

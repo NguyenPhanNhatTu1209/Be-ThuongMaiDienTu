@@ -297,6 +297,7 @@ class MeController {
           if (error) {
             res.send("Payment Fail");
           } else {
+            console.log('thanh toan');
             var donHangDichVu = await DonHangDichVu.findOneAndUpdate(
               { _id: idDonHang },
               update,

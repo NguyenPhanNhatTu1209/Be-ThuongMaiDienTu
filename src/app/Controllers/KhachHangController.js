@@ -731,7 +731,7 @@ class KhachHangController {
               var tmnCode = "JCO3SG7X";
               var secretKey = "BKPYNKKKBEAZCHZFHLIXKMXXCODHEVSU";
               var vnpUrl = "http://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-              var returnUrl = "http://54.255.93.14/me/vnpay_return";
+              var returnUrl = "https://be-b010.herokuapp.com/me/vnpay_return";
               var id = `${idDonHangMoiTao}`;
 
               var date = new Date();
@@ -1058,6 +1058,8 @@ class KhachHangController {
           mangShippingPackage[i]._doc.TenDoanhNghiep = congTy.TenDoanhNghiep;
           mangShippingPackage[i]._doc.Logo = congTy.Logo;
           mangShippingPackage[i]._doc.LoaiHangHoa = tenHangHoa;
+          mangShippingPackage[i]._doc.SoKyGoi = productType._doc.SoKy;
+
         }
         res.status(200).send({
           data: mangShippingPackage,
