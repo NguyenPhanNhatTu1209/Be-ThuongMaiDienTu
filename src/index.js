@@ -12,6 +12,9 @@ const route = require("./routes");
 
 db.connect(process.env.DB_URL);
 paypal.connect(process.env.ID_Client, process.env.Secret);
+
+app.use(cors()); 
+
 //app.use(express.static(path.join(__dirname, '/img')));
 app.use(express.json());
 app.use(busboy());
@@ -31,7 +34,6 @@ const corsOptions ={
   ], 
   preflightContinue: false 
 }
-app.use(cors());
 
 route(app);
 
